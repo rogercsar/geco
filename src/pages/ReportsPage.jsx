@@ -647,5 +647,3 @@ const ReportsPage = ({ onPageChange }) => {
 };
 
 export default ReportsPage;
-
-export default ReportsPage;

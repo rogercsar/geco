@@ -118,3 +118,5 @@ const Header = ({ onMenuToggle, isMenuOpen, onNewBudget }) => {
     </header>
   );
 };
+
+export default Header;
