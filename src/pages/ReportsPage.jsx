@@ -17,7 +17,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Eye,
-  Share2
+  Share2,
+  Plus
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useBudget } from '../contexts/BudgetContext';
