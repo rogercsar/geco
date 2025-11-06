@@ -1,24 +1,25 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { Link, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../features/authSlice';
 import { 
   Home, 
   Plus, 
   FileText, 
   Star, 
   BarChart3, 
-  Users, 
-  Building2, 
   Settings,
   Shield,
   ChevronRight,
   User,
   LogOut
 } from 'lucide-react';
-import Button from '../ui/Button';
-import { useAuth } from '../../contexts/AuthContext';
 
-const Sidebar = ({ isOpen, onClose, currentPage, onPageChange, onLogout }) => {
-  const { currentUser, isAdmin, logout } = useAuth();
+const Sidebar = ({ isOpen, onClose }) => {
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = user?.isAdmin;
 
   const menuItems = [
     {
@@ -63,14 +64,8 @@ const Sidebar = ({ isOpen, onClose, currentPage, onPageChange, onLogout }) => {
   ];
 
 
-  const handleItemClick = (item) => {
-    onPageChange(item.id);
-    onClose();
-  };
-
   const handleLogout = () => {
-    logout();
-    onLogout();
+    dispatch(logout());
     onClose();
   };
 
@@ -109,11 +104,12 @@ const Sidebar = ({ isOpen, onClose, currentPage, onPageChange, onLogout }) => {
           <nav className="flex-1 p-4 space-y-2">
             <div className="space-y-1">
               {menuItems.map((item) => (
-                <button
+                <Link
                   key={item.id}
-                  onClick={() => handleItemClick(item)}
+                  to={item.path}
+                  onClick={onClose}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    currentPage === item.id
+                    location.pathname === item.path
                       ? 'bg-primary-100 text-primary-700'
                       : 'text-secondary-700 hover:bg-secondary-100'
                   }`}
@@ -122,10 +118,10 @@ const Sidebar = ({ isOpen, onClose, currentPage, onPageChange, onLogout }) => {
                     {item.icon}
                     <span>{item.label}</span>
                   </div>
-                  {currentPage === item.id && (
+                  {location.pathname === item.path && (
                     <ChevronRight className="h-4 w-4" />
                   )}
-                </button>
+                </Link>
               ))}
             </div>
 
@@ -140,11 +136,12 @@ const Sidebar = ({ isOpen, onClose, currentPage, onPageChange, onLogout }) => {
                 </div>
                 <div className="space-y-1">
                   {adminItems.map((item) => (
-                    <button
+                    <Link
                       key={item.id}
-                      onClick={() => handleItemClick(item)}
+                      to={item.path}
+                      onClick={onClose}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        currentPage === item.id
+                        location.pathname === item.path
                           ? 'bg-red-100 text-red-700'
                           : 'text-secondary-700 hover:bg-red-50'
                       }`}
@@ -153,10 +150,10 @@ const Sidebar = ({ isOpen, onClose, currentPage, onPageChange, onLogout }) => {
                         {item.icon}
                         <span>{item.label}</span>
                       </div>
-                      {currentPage === item.id && (
+                      {location.pathname === item.path && (
                         <ChevronRight className="h-4 w-4" />
                       )}
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -173,14 +170,14 @@ const Sidebar = ({ isOpen, onClose, currentPage, onPageChange, onLogout }) => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-secondary-900 truncate">
-                    {currentUser?.nome || 'Usuário'}
+                    {user?.name || 'Usuário'}
                   </p>
                   <p className="text-xs text-secondary-500 truncate">
-                    {currentUser?.email}
+                    {user?.email}
                   </p>
                   <div className="flex items-center space-x-2 mt-1">
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                      {currentUser?.plano || 'básico'}
+                      {user?.plan || 'básico'}
                     </span>
                     {isAdmin && (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -193,20 +190,22 @@ const Sidebar = ({ isOpen, onClose, currentPage, onPageChange, onLogout }) => {
 
               {/* User Actions */}
               <div className="space-y-1">
-                <button 
-                  onClick={() => handleItemClick({ id: 'profile' })}
+                <Link
+                  to="/profile"
+                  onClick={onClose}
                   className="w-full flex items-center px-3 py-2 text-sm text-secondary-700 hover:bg-secondary-100 rounded-lg transition-colors"
                 >
                   <User className="h-4 w-4 mr-3" />
                   Meu Perfil
-                </button>
-                <button 
-                  onClick={() => handleItemClick({ id: 'settings' })}
+                </Link>
+                <Link
+                  to="/settings"
+                  onClick={onClose}
                   className="w-full flex items-center px-3 py-2 text-sm text-secondary-700 hover:bg-secondary-100 rounded-lg transition-colors"
                 >
                   <Settings className="h-4 w-4 mr-3" />
                   Configurações
-                </button>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center px-3 py-2 text-sm text-red-700 hover:bg-red-50 rounded-lg transition-colors"

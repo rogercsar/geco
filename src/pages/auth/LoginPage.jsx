@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '../../features/authSlice';
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/Card';
 
-const LoginPage = ({ onSwitchToRegister, onAuthSuccess, onForgotPassword }) => {
-  const { login } = useAuth();
+const LoginPage = ({ onSwitchToRegister, onForgotPassword }) => {
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,28 +22,11 @@ const LoginPage = ({ onSwitchToRegister, onAuthSuccess, onForgotPassword }) => {
       ...prev,
       [name]: value
     }));
-    // Limpar erro quando usuário começar a digitar
-    if (error) setError('');
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const result = await login(formData.email, formData.password);
-      
-      if (result.success) {
-        onAuthSuccess();
-      } else {
-        setError(result.error);
-      }
-    } catch (err) {
-      setError('Erro inesperado. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
+    dispatch(loginUser(formData));
   };
 
   return (
