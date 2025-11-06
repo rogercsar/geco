@@ -17,6 +17,8 @@ export const BudgetProvider = ({ children }) => {
   const [favoriteMaterials, setFavoriteMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const hasSupabase = !!supabase;
+
   const toUIBudget = (row) => ({
     id: row.id,
     info: {
@@ -68,6 +70,14 @@ export const BudgetProvider = ({ children }) => {
     const loadData = async () => {
       setLoading(true);
       try {
+        // Evitar chamadas quando Supabase não estiver configurado
+        if (!hasSupabase) {
+          setBudgets([]);
+          const savedFavorites = loadFavorites();
+          setFavoriteMaterials(savedFavorites);
+          return;
+        }
+
         const { data: userData } = await supabase.auth.getUser();
         const uid = userData?.user?.id;
         if (!uid) {
@@ -92,9 +102,14 @@ export const BudgetProvider = ({ children }) => {
 
     loadData();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, _session) => {
-      loadData();
-    });
+    // Registrar mudança de auth somente quando Supabase existe
+    let sub;
+    if (hasSupabase && supabase.auth?.onAuthStateChange) {
+      const { data } = supabase.auth.onAuthStateChange((_event, _session) => {
+        loadData();
+      });
+      sub = data;
+    }
     return () => {
       sub?.subscription?.unsubscribe?.();
     };
@@ -105,6 +120,9 @@ export const BudgetProvider = ({ children }) => {
   }, [favoriteMaterials]);
 
   const createBudget = async (budgetData) => {
+    if (!hasSupabase) {
+      return { success: false, error: 'Supabase não configurado' };
+    }
     try {
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData?.user?.id;
@@ -125,6 +143,9 @@ export const BudgetProvider = ({ children }) => {
   };
 
   const updateBudget = async (budgetId, updatedData) => {
+    if (!hasSupabase) {
+      return { success: false, error: 'Supabase não configurado' };
+    }
     try {
       const patch = toRow(updatedData);
       delete patch.user_id;
@@ -145,6 +166,9 @@ export const BudgetProvider = ({ children }) => {
   };
 
   const deleteBudget = async (budgetId) => {
+    if (!hasSupabase) {
+      return { success: false, error: 'Supabase não configurado' };
+    }
     try {
       const { error } = await supabase
         .from('budgets')
@@ -160,6 +184,9 @@ export const BudgetProvider = ({ children }) => {
   };
 
   const duplicateBudget = async (budgetId) => {
+    if (!hasSupabase) {
+      return { success: false, error: 'Supabase não configurado' };
+    }
     try {
       const original = budgets.find(b => b.id === budgetId);
       if (!original) {

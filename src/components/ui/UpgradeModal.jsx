@@ -16,10 +16,14 @@ import {
 import Button from './Button';
 import Card from './Card';
 import Badge from './Badge';
+import { useSelector } from 'react-redux';
+import api from '../../utils/api';
 
 const UpgradeModal = ({ isOpen, onClose, currentPlan = 'básico' }) => {
   const [selectedPlan, setSelectedPlan] = useState('pro');
-
+  const [selectedPeriod, setSelectedPeriod] = useState('mensal');
+  const [loading, setLoading] = useState(false);
+  const user = useSelector((state) => state.auth?.user);
   const plans = [
     {
       id: 'básico',
@@ -46,7 +50,7 @@ const UpgradeModal = ({ isOpen, onClose, currentPlan = 'básico' }) => {
     {
       id: 'pro',
       name: 'Pro',
-      price: 'R$ 29,90',
+      price: 'R$ 49,90',
       period: '/mês',
       description: 'Para profissionais',
       features: [
@@ -91,12 +95,35 @@ const UpgradeModal = ({ isOpen, onClose, currentPlan = 'básico' }) => {
 
   const currentPlanData = plans.find(plan => plan.id === currentPlan);
   const selectedPlanData = plans.find(plan => plan.id === selectedPlan);
+  const calcPrice = (planId, period) => {
+    const base = planId === 'pro' ? 49.9 : planId === 'empresarial' ? 99.9 : 0;
+    const mult = period === 'mensal' ? 1 : period === 'semestral' ? 6 : 12;
+    return (base * mult).toFixed(2);
+  };
 
-  const handleUpgrade = () => {
-    // Implementar lógica de upgrade
-    console.log('Upgrading to:', selectedPlan);
-    // TODO: Implementar integração com sistema de pagamento
-    onClose();
+  const handleUpgrade = async () => {
+    if (selectedPlan === 'básico') {
+      onClose();
+      return;
+    }
+    try {
+      setLoading(true);
+      const email = user?.email;
+      const { data } = await api.post('/api/v1/payments/subscription', {
+        plan: selectedPlan,
+        period: selectedPeriod,
+        email,
+      });
+      const initPoint = data?.init_point;
+      if (initPoint) {
+        window.location.href = initPoint;
+      } else {
+        setLoading(false);
+      }
+    } catch (e) {
+      setLoading(false);
+      console.error('Upgrade error', e);
+    }
   };
 
   if (!isOpen) return null;
@@ -276,8 +303,9 @@ const UpgradeModal = ({ isOpen, onClose, currentPlan = 'básico' }) => {
                   <Button 
                     onClick={handleUpgrade}
                     className="px-8"
+                    disabled={loading}
                   >
-                    Fazer Upgrade
+                    {loading ? 'Carregando...' : 'Fazer Upgrade'}
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </div>

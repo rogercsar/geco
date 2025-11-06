@@ -25,6 +25,12 @@ const UserSchema = new mongoose.Schema({
     enum: ['Básico', 'Pro', 'Empresarial'],
     default: 'Básico',
   },
+  subscription: {
+    mp_preapproval_id: { type: String, default: null },
+    period: { type: String, enum: ['mensal', 'semestral', 'anual'], default: null },
+    status: { type: String, default: null },
+    updatedAt: { type: Date, default: null },
+  },
   createdAt: {
     type: Date,
     default: Date.now,

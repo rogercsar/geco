@@ -51,3 +51,22 @@ exports.login = async (req, res, next) => {
     data: user,
   });
 };
+
+// @desc    Get current user by email
+// @route   GET /api/v1/auth/me?email=...
+// @access  Public (for now)
+exports.me = async (req, res, next) => {
+  try {
+    const email = req.query?.email;
+    if (!email) {
+      return res.status(400).json({ success: false, msg: 'Email é obrigatório' });
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, msg: 'Usuário não encontrado' });
+    }
+    return res.status(200).json({ success: true, data: user });
+  } catch (e) {
+    return res.status(500).json({ success: false, msg: e.message || 'Erro interno' });
+  }
+};
