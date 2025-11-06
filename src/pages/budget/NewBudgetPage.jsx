@@ -139,7 +139,8 @@ const NewBudgetPage = ({ onPageChange }) => {
         total: totalValue,
         userId: currentUser.id,
         plano: currentUser.plano,
-        budgetMode: budgetMode
+        budgetMode: budgetMode,
+        budgetType: budgetType
       });
       
       if (result.success) {
