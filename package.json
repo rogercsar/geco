@@ -23,7 +23,13 @@
     "react-hot-toast": "^2.4.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^6.20.1",
-    "tailwind-merge": "^2.0.0"
+    "tailwind-merge": "^2.0.0",
+    "serverless-http": "^3.2.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.19.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "bcryptjs": "^3.0.3"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
