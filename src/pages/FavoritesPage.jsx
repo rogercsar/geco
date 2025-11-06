@@ -129,16 +129,13 @@ const FavoritesPage = () => {
 
   const handleCreateNewBudget = () => {
     const userBudgetsCount = currentUser ? getBudgetsByUser(currentUser.id).length : 0;
-    -   if (canCreateNewBudget(currentUser, userBudgetsCount)) {
-    
-    -    } else {
-    +   if (canCreateNewBudget(currentUser, userBudgetsCount)) {
-    +      navigate('/new-budget');
-    +    } else {
-           const limit = getBudgetLimit(currentUser);
-           showUpgradeToast(limit, () => setShowUpgradeModal(true));
-         }
-       };
+    if (canCreateNewBudget(currentUser, userBudgetsCount)) {
+      navigate('/new-budget');
+    } else {
+      const limit = getBudgetLimit(currentUser);
+      showUpgradeToast(limit, () => setShowUpgradeModal(true));
+    }
+  };
   const sortedFavorites = [...filteredFavorites].sort((a, b) => {
     switch (sortBy) {
       case 'name':
@@ -422,7 +419,4 @@ const FavoritesPage = () => {
 };
 
 export default FavoritesPage;
-
-
-// remove stray diff line
 
