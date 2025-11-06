@@ -112,3 +112,19 @@ geco/
 
 ## 📄 Licença
 Este projeto está sob a licença MIT.
+
+## 🔌 Configuração de API (Produção)
+- Em produção (Netlify), configure `VITE_API_BASE_URL` nas variáveis de ambiente do site apontando para seu backend (Ex.: `https://seu-backend.exemplo.com`).
+- O frontend irá chamar `VITE_API_BASE_URL + /api/v1/...` evitando 404 no domínio da Netlify.
+- Localmente, o proxy do Vite já encaminha `/api` para `http://localhost:5000` conforme `vite.config.js`.
+
+### Passos no Netlify
+- Site settings → Build & deploy → Environment → Add variable
+- Key: `VITE_API_BASE_URL` | Value: `https://seu-backend.exemplo.com`
+- Redeploy o site para aplicar a variável.
+
+### Deploy do Backend
+- Você pode publicar `server/` em um provedor como Render/Railway.
+- Configure `MONGO_URI` e use Node 20 LTS.
+- Um arquivo `render.yaml` opcional pode facilitar a criação do serviço.
+

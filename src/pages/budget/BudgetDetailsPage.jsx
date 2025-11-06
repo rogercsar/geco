@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../utils/api';
 import { useParams } from 'react-router-dom'; // Supondo que estamos usando react-router-dom
 import ExportPDFButton from '../../components/ui/ExportPDFButton';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
@@ -12,7 +12,7 @@ const BudgetDetailsPage = () => {
   useEffect(() => {
     const fetchBudget = async () => {
       try {
-        const response = await axios.get(`/api/v1/budgets/${id}`);
+        const response = await api.get(`/api/v1/budgets/${id}`);
         setBudget(response.data.data);
       } catch (error) {
         console.error('Error fetching budget:', error);
