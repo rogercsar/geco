@@ -37,8 +37,10 @@ import { canExportPDF, canCreateNewBudget, getBudgetLimit } from '../utils/planG
 import UpgradeModal from '../components/ui/UpgradeModal';
 import { showUpgradeToast } from '../utils/upgradeToast';
 import { UPGRADE_MESSAGES } from '../data/constants';
+import { useNavigate } from 'react-router-dom';
 
-const MyBudgetsPage = ({ onPageChange }) => {
+const MyBudgetsPage = () => {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { getBudgetsByUser, deleteBudget, duplicateBudget, loading: budgetLoading } = useBudget();
   const [budgets, setBudgets] = useState([]);
@@ -294,13 +296,12 @@ Status: ${budget.status || 'Ativo'}
   const handleCreateNewBudget = () => {
     const userBudgetsCount = budgets.length;
     if (canCreateNewBudget(currentUser, userBudgetsCount)) {
-      onPageChange('new-budget');
+      navigate('/new-budget');
     } else {
-      const limit = getBudgetLimit(currentUser);
-      showUpgradeToast(limit, () => setShowUpgradeModal(true));
-    }
-  };
-
+       const limit = getBudgetLimit(currentUser);
+       showUpgradeToast(limit, () => setShowUpgradeModal(true));
+     }
+   };
   const getBudgetTypeIcon = (type) => {
     switch (type) {
       case 'materials':
@@ -359,7 +360,7 @@ Status: ${budget.status || 'Ativo'}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
         <div>
           <div className="text-sm text-secondary-600 mb-1">
-            <button className="hover:text-secondary-900" onClick={() => onPageChange('dashboard')}>Dashboard</button>
+            <button className="hover:text-secondary-900" onClick={() => navigate('/dashboard')}>Dashboard</button>
             <span className="mx-2">/</span>
             <span className="text-secondary-900 font-medium">Meus Orçamentos</span>
           </div>

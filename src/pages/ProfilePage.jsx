@@ -5,8 +5,10 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Card from '../components/ui/Card';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-const ProfilePage = ({ onPageChange }) => {
+const ProfilePage = () => {
+  const navigate = useNavigate();
   const { currentUser, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -81,7 +83,7 @@ const ProfilePage = ({ onPageChange }) => {
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
-            onClick={() => onPageChange('dashboard')}
+            onClick={() => navigate('/dashboard')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar

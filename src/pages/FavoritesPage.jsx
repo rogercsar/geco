@@ -26,8 +26,10 @@ import { formatCurrency } from '../utils/format';
 import { canCreateNewBudget, getBudgetLimit } from '../utils/planGuard';
 import UpgradeModal from '../components/ui/UpgradeModal';
 import { showUpgradeToast } from '../utils/upgradeToast';
+import { useNavigate } from 'react-router-dom';
 
-const FavoritesPage = ({ onPageChange }) => {
+const FavoritesPage = () => {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { getBudgetsByUser } = useBudget();
   const [favorites, setFavorites] = useState([]);
@@ -127,13 +129,16 @@ const FavoritesPage = ({ onPageChange }) => {
 
   const handleCreateNewBudget = () => {
     const userBudgetsCount = currentUser ? getBudgetsByUser(currentUser.id).length : 0;
-    if (canCreateNewBudget(currentUser, userBudgetsCount)) {
-      onPageChange('new-budget');
-    } else {
-      const limit = getBudgetLimit(currentUser);
-      showUpgradeToast(limit, () => setShowUpgradeModal(true));
-    }
-  };
+    -   if (canCreateNewBudget(currentUser, userBudgetsCount)) {
+    
+    -    } else {
+    +   if (canCreateNewBudget(currentUser, userBudgetsCount)) {
+    +      navigate('/new-budget');
+    +    } else {
+           const limit = getBudgetLimit(currentUser);
+           showUpgradeToast(limit, () => setShowUpgradeModal(true));
+         }
+       };
   const sortedFavorites = [...filteredFavorites].sort((a, b) => {
     switch (sortBy) {
       case 'name':
@@ -417,4 +422,7 @@ const FavoritesPage = ({ onPageChange }) => {
 };
 
 export default FavoritesPage;
+
+
+// remove stray diff line
 

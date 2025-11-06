@@ -24,8 +24,10 @@ import { canCreateNewBudget, getBudgetLimit } from '../utils/planGuard';
 import UpgradeModal from '../components/ui/UpgradeModal';
 import { showUpgradeToast } from '../utils/upgradeToast';
 import Progress from '../components/ui/Progress';
+import { useNavigate } from 'react-router-dom';
 
-const DashboardPage = ({ onPageChange }) => {
+const DashboardPage = () => {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { getBudgetsByUser, deleteBudget, loading: budgetLoading } = useBudget();
   const [budgets, setBudgets] = useState([]);
@@ -61,15 +63,11 @@ const DashboardPage = ({ onPageChange }) => {
   }, [currentUser, getBudgetsByUser, budgetLoading]);
 
   const handleViewBudget = (budgetId) => {
-    // Implementar visualização do orçamento
-    console.log('Visualizar orçamento:', budgetId);
-    // TODO: Implementar modal de visualização
+    navigate(`/budgets/${budgetId}`);
   };
 
   const handleEditBudget = (budgetId) => {
-    // Implementar edição do orçamento
-    console.log('Editar orçamento:', budgetId);
-    // TODO: Implementar edição do orçamento
+    navigate(`/budgets/${budgetId}`);
   };
 
   const handleDeleteBudget = async (budgetId) => {
@@ -101,7 +99,7 @@ const DashboardPage = ({ onPageChange }) => {
   const handleCreateNewBudget = () => {
     const userBudgetsCount = budgets.length;
     if (canCreateNewBudget(currentUser, userBudgetsCount)) {
-      onPageChange('new-budget');
+      navigate('/new-budget');
     } else {
       const limit = getBudgetLimit(currentUser);
       showUpgradeToast(limit, () => setShowUpgradeModal(true));
@@ -246,7 +244,7 @@ const DashboardPage = ({ onPageChange }) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onPageChange('budgets')}
+                  onClick={() => navigate('/budgets')}
                 >
                   Ver todos
                 </Button>
@@ -352,7 +350,7 @@ const DashboardPage = ({ onPageChange }) => {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => onPageChange('favorites')}
+                  onClick={() => navigate('/favorites')}
                 >
                   <Star className="h-4 w-4 mr-2" />
                   Ver Favoritos
@@ -360,7 +358,7 @@ const DashboardPage = ({ onPageChange }) => {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => onPageChange('reports')}
+                  onClick={() => navigate('/reports')}
                 >
                   <TrendingUp className="h-4 w-4 mr-2" />
                   Relatórios

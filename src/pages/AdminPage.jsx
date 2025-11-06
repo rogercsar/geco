@@ -11,8 +11,10 @@ import AddUserForm from './admin/AddUserForm';
 import AddCompanyForm from './admin/AddCompanyForm';
 import UserProfileModal from './admin/UserProfileModal';
 import CompanyProfileModal from './admin/CompanyProfileModal';
+import { useNavigate } from 'react-router-dom';
 
-const AdminPage = ({ onPageChange }) => {
+const AdminPage = () => {
+  const navigate = useNavigate();
   const { currentUser, users, deleteUser } = useAuth();
   const { companies, deleteCompany } = useCompany();
   const [activeTab, setActiveTab] = useState('overview');
@@ -626,7 +628,7 @@ const AdminPage = ({ onPageChange }) => {
         );
 
       case 'budget-settings':
-        return <BudgetSettingsContent onPageChange={onPageChange} />;
+        return <BudgetSettingsContent />;
 
       default:
         return null;
@@ -644,7 +646,7 @@ const AdminPage = ({ onPageChange }) => {
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
-            onClick={() => onPageChange('dashboard')}
+            onClick={() => navigate('/dashboard')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
@@ -820,7 +822,7 @@ const AdminPage = ({ onPageChange }) => {
 };
 
 // Componente para configurações do orçamento
-const BudgetSettingsContent = ({ onPageChange }) => {
+const BudgetSettingsContent = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -833,7 +835,7 @@ const BudgetSettingsContent = ({ onPageChange }) => {
           </p>
         </div>
         <Button
-          onClick={() => onPageChange('budget-settings')}
+          onClick={() => navigate('/admin/budget-settings')}
           className="bg-primary-600 hover:bg-primary-700"
         >
           <Settings className="h-4 w-4 mr-2" />

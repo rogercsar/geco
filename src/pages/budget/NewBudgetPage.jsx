@@ -15,8 +15,10 @@ import Step5Materials from './steps/Step4Materials';
 import Step5Labor from './steps/Step4Labor';
 import Step5Combined from './steps/Step4Combined';
 import Step6Summary from './steps/Step5Summary';
+import { useNavigate } from 'react-router-dom';
 
-const NewBudgetPage = ({ onPageChange }) => {
+const NewBudgetPage = () => {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { createBudget } = useBudget();
   const [currentStep, setCurrentStep] = useState(0);
@@ -144,7 +146,7 @@ const NewBudgetPage = ({ onPageChange }) => {
       });
       
       if (result.success) {
-        onPageChange('dashboard');
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Erro ao salvar orçamento:', error);
@@ -262,7 +264,7 @@ const NewBudgetPage = ({ onPageChange }) => {
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
-            onClick={() => onPageChange('dashboard')}
+            onClick={() => navigate('/dashboard')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar

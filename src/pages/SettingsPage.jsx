@@ -4,8 +4,10 @@ import { ArrowLeft, Settings, Bell, Shield, Palette, Save } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-const SettingsPage = ({ onPageChange }) => {
+const SettingsPage = () => {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [settings, setSettings] = useState({
     notifications: {
@@ -70,7 +72,7 @@ const SettingsPage = ({ onPageChange }) => {
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
-            onClick={() => onPageChange('dashboard')}
+            onClick={() => navigate('/dashboard')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar

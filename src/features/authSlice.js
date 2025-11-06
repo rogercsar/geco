@@ -85,6 +85,33 @@ export const registerUser = createAsyncThunk('auth/registerUser', async ({ name,
   };
 });
 
+export const initAuth = createAsyncThunk('auth/initAuth', async (_, { rejectWithValue }) => {
+  try {
+    if (!supabase) return null;
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) return rejectWithValue(error.message);
+    if (!user) return null;
+
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    if (profileError) return rejectWithValue(profileError.message);
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: profile.name || '',
+      plan: profile.plan || 'Básico',
+      is_admin: !!profile.is_admin,
+      createdAt: profile.created_at,
+    };
+  } catch (e) {
+    return rejectWithValue(e.message);
+  }
+});
+
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -120,6 +147,24 @@ export const authSlice = createSlice({
         state.user = action.payload;
       })
       .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || action.error.message;
+      })
+      // Hydrate from existing Supabase session
+      .addCase(initAuth.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(initAuth.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload) {
+          state.isAuthenticated = true;
+          state.user = action.payload;
+        } else {
+          state.isAuthenticated = false;
+          state.user = null;
+        }
+      })
+      .addCase(initAuth.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || action.error.message;
       });

@@ -26,7 +26,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       id: 'dashboard',
       label: 'Dashboard',
       icon: <Home className="h-5 w-5" />,
-      path: '/dashboard'
+      path: '/'
     },
     {
       id: 'new-budget',
