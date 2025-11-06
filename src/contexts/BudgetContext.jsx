@@ -159,6 +159,40 @@ export const BudgetProvider = ({ children }) => {
     }
   };
 
+  const duplicateBudget = async (budgetId) => {
+    try {
+      const original = budgets.find(b => b.id === budgetId);
+      if (!original) {
+        return { success: false, error: 'Orçamento não encontrado' };
+      }
+      const cloneData = {
+        info: original.info,
+        structure: original.structure,
+        materials: original.materials,
+        labor: original.labor,
+        quantidades: original.quantidades,
+        total: original.total,
+        budgetType: original.budgetType,
+        budgetMode: original.budgetMode,
+        status: original.status,
+        userId: original.userId
+      };
+      const row = toRow(cloneData);
+      const { data, error } = await supabase
+        .from('budgets')
+        .insert(row)
+        .select('*')
+        .single();
+      if (error) throw error;
+      const newBudget = toUIBudget(data);
+      setBudgets(prev => [newBudget, ...prev]);
+      return { success: true, budget: newBudget };
+    } catch (error) {
+      console.error('Erro ao duplicar orçamento:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const getBudgetsByUser = (userId) => {
     return budgets.filter(budget => budget.userId === userId);
   };
@@ -194,6 +228,7 @@ export const BudgetProvider = ({ children }) => {
     createBudget,
     updateBudget,
     deleteBudget,
+    duplicateBudget,
     getBudgetsByUser,
     getBudgetById,
     toggleFavoriteMaterial,

@@ -40,7 +40,7 @@ import { UPGRADE_MESSAGES } from '../data/constants';
 
 const MyBudgetsPage = ({ onPageChange }) => {
   const { currentUser } = useAuth();
-  const { getBudgetsByUser, deleteBudget, loading: budgetLoading } = useBudget();
+  const { getBudgetsByUser, deleteBudget, duplicateBudget, loading: budgetLoading } = useBudget();
   const [budgets, setBudgets] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
@@ -217,9 +217,30 @@ Status: ${budget.status || 'Ativo'}
     }
   };
 
-  const handleDuplicateBudget = (budgetId) => {
-    // TODO: Implementar duplicação do orçamento
-    console.log('Duplicar orçamento:', budgetId);
+  const handleDuplicateBudget = async (budgetId) => {
+    const userBudgetsCount = budgets.length;
+    if (!canCreateNewBudget(currentUser, userBudgetsCount)) {
+      const limit = getBudgetLimit(currentUser);
+      showUpgradeToast(limit, () => setShowUpgradeModal(true));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await duplicateBudget(budgetId);
+      if (result?.success) {
+        const userBudgets = getBudgetsByUser(currentUser.id);
+        setBudgets(userBudgets);
+        toast.success('Orçamento duplicado com sucesso');
+      } else {
+        toast.error(result?.error || 'Erro ao duplicar orçamento');
+      }
+    } catch (error) {
+      console.error('Erro ao duplicar orçamento:', error);
+      toast.error('Erro ao duplicar orçamento');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDeleteBudget = async (budgetId) => {
