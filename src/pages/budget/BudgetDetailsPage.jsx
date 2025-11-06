@@ -1,8 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../utils/api';
+import { supabase } from '../../utils/supabase';
 import { useParams } from 'react-router-dom'; // Supondo que estamos usando react-router-dom
 import ExportPDFButton from '../../components/ui/ExportPDFButton';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+
+const toCamelBudget = (row) => ({
+  id: row.id,
+  projectName: row.project_name,
+  clientName: row.client_name,
+  projectAddress: row.project_address,
+  projectType: row.project_type,
+  structureType: row.structure_type,
+  steps: row.steps || [],
+  materials: row.materials || [],
+  totalCost: row.total_cost,
+  user: row.user_id,
+  createdAt: row.created_at,
+});
 
 const BudgetDetailsPage = () => {
   const { id } = useParams(); // Supondo que estamos usando react-router-dom
@@ -12,10 +26,15 @@ const BudgetDetailsPage = () => {
   useEffect(() => {
     const fetchBudget = async () => {
       try {
-        const response = await api.get(`/api/v1/budgets/${id}`);
-        setBudget(response.data.data);
+        const { data, error } = await supabase
+          .from('budgets')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (error) throw error;
+        setBudget(toCamelBudget(data));
       } catch (error) {
-        console.error('Error fetching budget:', error);
+        console.error('Error fetching budget:', error.message || error);
       } finally {
         setLoading(false);
       }
