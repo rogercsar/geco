@@ -128,3 +128,34 @@ Este projeto está sob a licença MIT.
 - Configure `MONGO_URI` e use Node 20 LTS.
 - Um arquivo `render.yaml` opcional pode facilitar a criação do serviço.
 
+
+## 🔗 Integração com Supabase (Budgets)
+- O módulo de orçamentos foi migrado para Supabase usando `@supabase/supabase-js`.
+- Configure as variáveis de ambiente no frontend:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
+- A tabela e políticas RLS estão em `supabase/budgets.sql`. Aplique no SQL Editor do Supabase:
+  - Cria a tabela `public.budgets` com colunas em `snake_case`.
+  - Habilita RLS e políticas de leitura/escrita restritas ao usuário (`auth.uid()`).
+  - Trigger para atualizar `updated_at` em updates.
+
+### Mapeamento de Dados (UI ↔ DB)
+- O `BudgetContext.jsx` faz a conversão automática entre os formatos:
+  - DB (`snake_case`): `project_name`, `client_name`, `materials`, `labor`, `materials_quantities`, `budget_type`, etc.
+  - UI (`camelCase`): `info.nomeProjeto`, `info.nomeCliente`, `materials`, `labor`, `quantidades`, `budgetType`, etc.
+- Funções principais:
+  - `createBudget(data)`: `insert` com `user_id = auth.uid()` (RLS).
+  - `updateBudget(id, data)`: `update` seguro (não altera `user_id`).
+  - `deleteBudget(id)`: remoção do próprio usuário.
+  - `duplicateBudget(id)`: insere uma cópia do orçamento, respeitando o limite de plano.
+
+### Fluxo na UI
+- Listagem: `MyBudgetsPage` consome `getBudgetsByUser(userId)` do contexto.
+- Criação/Edição: `NewBudgetPage` envia `budgetType` e demais campos; CRUD pelo contexto.
+- Duplicação: botão "Duplicar" usa `duplicateBudget`. Aplica `canCreateNewBudget` para limites.
+- Exclusão: botão "Excluir" usa `deleteBudget` e atualiza a lista local.
+
+### Observações
+- Certifique-se de que o usuário esteja autenticado; RLS bloqueia acesso sem `auth.uid()`.
+- Caso altere o schema, mantenha o mapeamento em `toUIBudget`/`toRow` no `BudgetContext.jsx`.
+
