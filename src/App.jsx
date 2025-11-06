@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider } from './contexts/AuthContext';
+import { useSelector } from 'react-redux';
 import { BudgetProvider } from './contexts/BudgetContext';
 import { CompanyProvider } from './contexts/CompanyContext';
 import { BudgetSettingsProvider } from './contexts/BudgetSettingsContext';
@@ -9,6 +10,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import NewBudgetPage from './pages/budget/NewBudgetPage';
+import BudgetDetailsPage from './pages/budget/BudgetDetailsPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import AdminPage from './pages/AdminPage';
@@ -16,154 +18,52 @@ import FavoritesPage from './pages/FavoritesPage';
 import BudgetSettingsPage from './pages/admin/BudgetSettingsPage';
 import ReportsPage from './pages/ReportsPage';
 import MyBudgetsPage from './pages/MyBudgetsPage';
-import Header from './components/layout/Header';
-import Sidebar from './components/layout/Sidebar';
+import Layout from './components/layout/Layout';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('login');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const sidebarRef = useRef(null);
-
-  // Verificar autenticação na inicialização
-  useEffect(() => {
-    const savedUser = localStorage.getItem('geco_current_user');
-    if (savedUser) {
-      setIsAuthenticated(true);
-      setCurrentPage('dashboard');
-    }
-  }, []);
-
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    setIsMenuOpen(false);
-  };
-
-  const handleAuthSuccess = () => {
-    setIsAuthenticated(true);
-    setCurrentPage('dashboard');
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setCurrentPage('login');
-    localStorage.removeItem('geco_current_user');
-  };
-
-  const renderPage = () => {
-    if (!isAuthenticated) {
-      if (showForgotPassword) {
-        return <ForgotPasswordPage onBackToLogin={() => setShowForgotPassword(false)} />;
-      }
-      
-      switch (currentPage) {
-        case 'register':
-          return <RegisterPage onSwitchToLogin={() => setCurrentPage('login')} />;
-        case 'login':
-        default:
-          return (
-            <LoginPage 
-              onSwitchToRegister={() => setCurrentPage('register')} 
-              onAuthSuccess={handleAuthSuccess}
-              onForgotPassword={() => setShowForgotPassword(true)}
-            />
-          );
-      }
-    }
-
-    switch (currentPage) {
-      case 'dashboard':
-        return <DashboardPage onPageChange={handlePageChange} />;
-      case 'new-budget':
-        return <NewBudgetPage onPageChange={handlePageChange} />;
-      case 'profile':
-        return <ProfilePage onPageChange={handlePageChange} />;
-      case 'settings':
-        return <SettingsPage onPageChange={handlePageChange} />;
-      case 'admin':
-        return <AdminPage onPageChange={handlePageChange} />;
-      case 'budgets':
-        return <MyBudgetsPage onPageChange={handlePageChange} />;
-      case 'favorites':
-        return <FavoritesPage onPageChange={handlePageChange} />;
-      case 'budget-settings':
-        return <BudgetSettingsPage onPageChange={handlePageChange} />;
-      case 'reports':
-        return <ReportsPage onPageChange={handlePageChange} />;
-      default:
-        return <DashboardPage onPageChange={handlePageChange} />;
-    }
-  };
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   return (
-    <AuthProvider>
-      <BudgetProvider>
-        <CompanyProvider>
-          <BudgetSettingsProvider>
-        <div className="min-h-screen bg-secondary-50">
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-              success: {
-                duration: 3000,
-                iconTheme: {
-                  primary: '#4ade80',
-                  secondary: '#fff',
-                },
-              },
-              error: {
-                duration: 5000,
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: '#fff',
-                },
-              },
-            }}
-          />
-          
-          {isAuthenticated ? (
-            <div className="h-screen flex">
-              {/* Sidebar */}
-              <div ref={sidebarRef}>
-                <Sidebar
-                  isOpen={isMenuOpen}
-                  onClose={() => setIsMenuOpen(false)}
-                  currentPage={currentPage}
-                  onPageChange={handlePageChange}
-                  onLogout={handleLogout}
-                />
-              </div>
-              
-              {/* Main Content */}
-              <div className="flex flex-col h-full flex-1">
-                <Header
-                  isMenuOpen={isMenuOpen}
-                  onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
-                  onNewBudget={() => handlePageChange('new-budget')}
-                />
+    <BudgetProvider>
+      <CompanyProvider>
+        <BudgetSettingsProvider>
+          <Router>
+            <div className="min-h-screen bg-secondary-50">
+              <Toaster position="top-right" />
+              <Routes>
+                <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" />} />
+                <Route path="/register" element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/" />} />
+                <Route path="/forgot-password" element={!isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/" />} />
                 
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-secondary-50">
-                  <div className="w-full px-4 py-6">
-                    {renderPage()}
-                  </div>
-                </main>
-              </div>
+                <Route
+                  path="/*"
+                  element={
+                    isAuthenticated ? (
+                      <Layout>
+                        <Routes>
+                          <Route path="/" element={<DashboardPage />} />
+                          <Route path="/new-budget" element={<NewBudgetPage />} />
+                          <Route path="/budgets" element={<MyBudgetsPage />} />
+                          <Route path="/budgets/:id" element={<BudgetDetailsPage />} />
+                          <Route path="/favorites" element={<FavoritesPage />} />
+                          <Route path="/reports" element={<ReportsPage />} />
+                          <Route path="/profile" element={<ProfilePage />} />
+                          <Route path="/settings" element={<SettingsPage />} />
+                          <Route path="/admin" element={<AdminPage />} />
+                          <Route path="/admin/budget-settings" element={<BudgetSettingsPage />} />
+                        </Routes>
+                      </Layout>
+                    ) : (
+                      <Navigate to="/login" />
+                    )
+                  }
+                />
+              </Routes>
             </div>
-          ) : (
-            renderPage()
-          )}
-        </div>
-          </BudgetSettingsProvider>
-        </CompanyProvider>
-      </BudgetProvider>
-    </AuthProvider>
+          </Router>
+        </BudgetSettingsProvider>
+      </CompanyProvider>
+    </BudgetProvider>
   );
 }
 

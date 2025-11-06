@@ -1,155 +1,114 @@
 # Geco - Plataforma de Orçamentos de Construção Civil
 
-Uma plataforma moderna e intuitiva para cadastrar e gerenciar orçamentos de construção civil, desenvolvida com React e Tailwind CSS.
+Uma plataforma moderna e intuitiva para cadastrar e gerenciar orçamentos de construção civil, desenvolvida com React, Node.js e Tailwind CSS.
 
-## 🚀 Funcionalidades
+## 🚀 Status do Projeto
 
-### ✅ Implementadas
-- **Sistema de Autenticação**: Login e cadastro de usuários
-- **Dashboard Interativo**: Visão geral dos orçamentos e estatísticas
-- **Criação de Orçamentos**: Processo guiado em 5 etapas
-- **Sistema de Planos**: Básico, Pro e Empresarial
-- **Interface Responsiva**: Design moderno e mobile-first
-- **Persistência de Dados**: Armazenamento local com localStorage
-- **Sistema de Favoritos**: Materiais favoritos por usuário
+Este projeto foi significativamente refatorado para melhorar sua robustez, escalabilidade e manutenibilidade. As principais melhorias incluem a implementação de um backend dedicado, um sistema de gerenciamento de estado centralizado, roteamento profissional e uma suíte de testes automatizados.
 
-### 🔄 Em Desenvolvimento
-- Seleção de materiais por etapa
-- Cálculo automático de preços
-- Exportação para PDF
-- Envio por email/WhatsApp
-- Painel administrativo completo
-- Relatórios avançados
+## ✅ Funcionalidades
+
+- **Backend com API RESTful**: Servidor Node.js/Express com banco de dados MongoDB para persistência de dados.
+- **Sistema de Autenticação**: Endpoints para registro e login de usuários com senhas criptografadas.
+- **Gerenciamento de Orçamentos**: API para CRUD (Create, Read, Update, Delete) de orçamentos.
+- **Gestão de Estado com Redux**: Gerenciamento centralizado do estado da aplicação com Redux Toolkit.
+- **Roteamento com React Router**: Navegação robusta e baseada em URL com `react-router-dom`.
+- **Exportação para PDF**: Funcionalidade inicial para exportar detalhes do orçamento para PDF.
+- **Testes Automatizados**: Ambiente de testes configurado com Vitest e React Testing Library.
+- **Interface Responsiva**: Design moderno e mobile-first com Tailwind CSS.
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **React 18** - Biblioteca principal
-- **Vite** - Build tool e dev server
-- **Tailwind CSS** - Framework de estilos
-- **Framer Motion** - Animações
-- **Lucide React** - Ícones
-- **React Hot Toast** - Notificações
+**Frontend:**
+- **React 18**
+- **Vite**
+- **Tailwind CSS**
+- **Redux Toolkit**
+- **React Router DOM**
+- **Vitest & React Testing Library**
+- **Axios, Framer Motion, Lucide React**
 
-## 📦 Instalação
+**Backend:**
+- **Node.js**
+- **Express**
+- **MongoDB & Mongoose**
+- **bcryptjs, cors, dotenv**
 
-1. **Clone o repositório**
-   ```bash
-   git clone <url-do-repositorio>
-   cd geco
-   ```
+## 📦 Instalação e Uso
 
-2. **Instale as dependências**
-   ```bash
-   npm install
-   ```
+### Pré-requisitos
+- Node.js (v18 ou superior)
+- npm
+- MongoDB (rodando localmente ou uma instância na nuvem)
 
-3. **Execute o projeto**
-   ```bash
-   npm run dev
-   ```
+### 1. Clone o repositório
+```bash
+git clone <url-do-repositorio>
+cd geco
+```
 
-4. **Acesse no navegador**
-   ```
-   http://localhost:5173
-   ```
+### 2. Instale as dependências do Frontend
+```bash
+npm install
+```
 
-## 🎯 Como Usar
+### 3. Instale as dependências do Backend
+```bash
+cd server
+npm install
+```
 
-### Primeiro Acesso
-1. Acesse a aplicação
-2. Clique em "Cadastre-se aqui"
-3. Preencha os dados e escolha um plano
-4. Faça login com suas credenciais
+### 4. Configure as Variáveis de Ambiente
+- No diretório `server/`, crie um arquivo `.env`.
+- Adicione a sua string de conexão do MongoDB:
+  ```
+  MONGO_URI=mongodb://localhost:27017/geco
+  ```
 
-### Criando um Orçamento
-1. No dashboard, clique em "Novo Orçamento"
-2. **Passo 1**: Preencha as informações do projeto
-3. **Passo 2**: Escolha o tipo de estrutura
-4. **Passo 3**: Selecione as etapas da obra
-5. **Passo 4**: Configure os materiais (em desenvolvimento)
-6. **Passo 5**: Revise e salve o orçamento
+### 5. Execute o projeto
+- **Terminal 1 (Backend):**
+  ```bash
+  cd server
+  npm run dev
+  # O servidor backend irá rodar em http://localhost:5000
+  ```
+- **Terminal 2 (Frontend):**
+  ```bash
+  # A partir da raiz do projeto
+  npm run dev
+  # A aplicação estará disponível em http://localhost:5173
+  ```
 
-### Usuário Administrador
-- **Email**: admin@geco.app
-- **Senha**: admin123
-
-## 📱 Planos Disponíveis
-
-### Básico (Gratuito)
-- Até 3 orçamentos
-- Materiais básicos
-- Cálculos automáticos
-- Suporte por email
-
-### Pro (R$ 29,90/mês)
-- Orçamentos ilimitados
-- Todos os materiais
-- Lista de fornecedores
-- Exportação PDF
-- Favoritos
-- Suporte prioritário
-
-### Empresarial (R$ 99,90/mês)
-- Todas as funcionalidades Pro
-- Assinatura digital
-- Envio por email/WhatsApp
-- Relatórios avançados
-- Suporte telefônico
-- API personalizada
+### 👤 Credenciais de Teste
+- **Usuário Administrador (Padrão no `AuthContext` antigo, precisa ser recriado no DB):**
+  - **Email**: `admin@geco.app`
+  - **Senha**: `admin123`
+- Para novos usuários, utilize a funcionalidade de registro.
 
 ## 🏗️ Estrutura do Projeto
-
 ```
-src/
-├── components/          # Componentes reutilizáveis
-│   ├── ui/             # Componentes de interface
-│   └── layout/         # Componentes de layout
-├── contexts/           # Contextos React
-├── data/              # Dados e constantes
-├── pages/             # Páginas da aplicação
-│   ├── auth/          # Páginas de autenticação
-│   └── budget/        # Páginas de orçamento
-├── utils/             # Utilitários
-└── App.jsx            # Componente principal
+geco/
+├── server/              # Código do Backend (Node.js/Express)
+│   ├── config/
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   └── index.js
+├── src/                 # Código do Frontend (React)
+│   ├── components/
+│   ├── features/        # Slices do Redux
+│   ├── pages/
+│   ├── store/           # Store do Redux
+│   └── ...
+├── tests/               # Configuração dos testes
+└── ...
 ```
-
-## 🎨 Design System
-
-O projeto utiliza um design system consistente com:
-- **Cores**: Paleta baseada em azul (primary) e cinza (secondary)
-- **Tipografia**: Inter como fonte principal
-- **Componentes**: Sistema modular e reutilizável
-- **Animações**: Transições suaves com Framer Motion
-- **Responsividade**: Mobile-first approach
 
 ## 🔧 Scripts Disponíveis
-
-- `npm run dev` - Inicia o servidor de desenvolvimento
-- `npm run build` - Gera build de produção
-- `npm run preview` - Visualiza o build de produção
-- `npm run lint` - Executa o linter
+- `npm run dev` - Inicia o servidor de desenvolvimento do frontend.
+- `npm run build` - Gera o build de produção do frontend.
+- `npm run test` - Executa os testes automatizados.
+- `cd server && npm run dev` - Inicia o servidor de desenvolvimento do backend.
 
 ## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
-
-## 🤝 Contribuição
-
-Contribuições são bem-vindas! Para contribuir:
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature
-3. Commit suas mudanças
-4. Push para a branch
-5. Abra um Pull Request
-
-## 📞 Suporte
-
-Para suporte ou dúvidas:
-- Email: suporte@geco.app
-- WhatsApp: (11) 99999-9999
-
----
-
-Desenvolvido com ❤️ para a construção civil brasileira.
-
+Este projeto está sob a licença MIT.
