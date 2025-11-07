@@ -30,6 +30,12 @@ const Sidebar = ({ isOpen, onClose }) => {
       path: '/'
     },
     {
+      id: 'simulation',
+      label: 'Simular Cômodo',
+      icon: <Eye className="h-5 w-5" />,
+      path: '/simulation'
+    },
+    {
       id: 'new-budget',
       label: 'Novo Orçamento',
       icon: <Plus className="h-5 w-5" />,
@@ -46,12 +52,6 @@ const Sidebar = ({ isOpen, onClose }) => {
       label: 'Favoritos',
       icon: <Star className="h-5 w-5" />,
       path: '/favorites'
-    },
-    {
-      id: 'simulation',
-      label: 'Simular Cômodo',
-      icon: <Eye className="h-5 w-5" />,
-      path: '/simulation'
     },
     {
       id: 'reports',
