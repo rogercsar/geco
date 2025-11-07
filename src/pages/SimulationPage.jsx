@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ROOM_CATEGORIES, computeVariantCost } from '../data/simulation';
 import Button from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
-import { Tabs } from '../components/ui/Tabs'; // if not exists, fallback implemented below
+import { Tabs } from '../components/ui/Tabs';
 import { toast } from 'react-hot-toast';
 
 function FallbackTabs({ tabs, active, onChange }) {
@@ -91,6 +91,7 @@ export default function SimulationPage() {
       <p className="text-secondary-600">Escolha um cômodo e uma opção pré-definida para ver a metragem e o custo total estimado de materiais. Baixe a lista por R$ 5 ou fale com nosso escritório.</p>
 
       {(Tabs ? (
+        // Use the reusable Tabs component instead of local fallback
         <Tabs tabs={tabs} active={activeCat} onChange={setActiveCat} />
       ) : (
         <FallbackTabs tabs={tabs} active={activeCat} onChange={setActiveCat} />
