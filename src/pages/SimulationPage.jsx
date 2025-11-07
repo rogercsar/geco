@@ -176,6 +176,11 @@ export default function SimulationPage() {
         </div>
         <ImageGrid />
       </section>
+      // Helper para imagem placeholder inline (SVG)
+      const getPlaceholderImage = (label = 'Cômodo') => {
+        const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='240'><rect width='100%' height='100%' fill='%23e5e7eb'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%236b7280' font-size='20' font-family='Arial'>${label}</text></svg>`;
+        return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+      };
     </div>
   );
 }
