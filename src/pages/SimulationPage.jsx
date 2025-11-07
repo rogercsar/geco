@@ -32,13 +32,20 @@ export default function SimulationPage() {
   const [selections, setSelections] = useState(() => {
     try { const s = localStorage.getItem('simSelections'); return s ? JSON.parse(s) : {}; } catch { return {}; }
   });
+  const [paid, setPaid] = useState(() => {
+    try { return localStorage.getItem('simPaid') === 'true'; } catch { return false; }
+  });
 
   useEffect(() => {
     try { localStorage.setItem('simSelections', JSON.stringify(selections)); } catch {}
   }, [selections]);
+  useEffect(() => {
+    try { localStorage.setItem('simPaid', paid ? 'true' : 'false'); } catch {}
+  }, [paid]);
 
   const category = useMemo(() => ROOM_CATEGORIES.find(c => c.key === activeCat), [activeCat]);
   const categoryByKey = useMemo(() => Object.fromEntries(ROOM_CATEGORIES.map(c => [c.key, c.name])), []);
+  const catMap = useMemo(() => Object.fromEntries(ROOM_CATEGORIES.map(c => [c.key, c])), []);
   const currentSelection = selections[activeCat] || null;
   const summaries = useMemo(() => Object.entries(selections).map(([key, v]) => ({ key, variant: v, cost: computeVariantCost(v) })), [selections]);
   const grandTotal = useMemo(() => summaries.reduce((sum, s) => sum + s.cost.total, 0), [summaries]);
@@ -89,7 +96,7 @@ export default function SimulationPage() {
               <CardTitle>{v.title} • {v.area} m²</CardTitle>
             </CardHeader>
             <CardContent>
-              <img src={v.image || getPlaceholderImage(v.title)} alt={v.title} className="w-full h-40 object-cover rounded" />
+              <img src={v.image || category.thumbnail || getPlaceholderImage(v.title)} alt={v.title} className="w-full h-40 object-cover rounded" />
               <div className="mt-3 flex justify-between items-center">
                 <Button variant="outline" onClick={() => setSelections(prev => ({ ...prev, [category.key]: v }))}>Selecionar</Button>
                 <span className="text-secondary-600">Materiais médios</span>
@@ -109,7 +116,7 @@ export default function SimulationPage() {
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {summaries.map(({ key, variant, cost }) => (
                     <div key={key} className="border border-secondary-200 rounded p-3 flex items-center gap-3">
-                      <img src={variant.image || getPlaceholderImage(categoryByKey[key])} alt={variant.title} className="w-20 h-20 object-cover rounded" />
+                      <img src={variant.image || (catMap[key]?.thumbnail || getPlaceholderImage(categoryByKey[key]))} alt={variant.title} className="w-20 h-20 object-cover rounded" />
                       <div className="flex-1">
                         <p className="text-secondary-700"><strong>{categoryByKey[key]}</strong> • {variant.title}</p>
                         <p className="text-secondary-600">Área: {cost.area} m²</p>

@@ -1,7 +1,12 @@
+const makeThumb = (emoji, label) => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="160"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" font-size="40">${emoji}</text><text x="50%" y="75%" dominant-baseline="middle" text-anchor="middle" fill="%236b7280" font-size="16" font-family="Arial">${label}</text></svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
 export const ROOM_CATEGORIES = [
   {
     key: 'sala',
     name: 'Sala',
+    thumbnail: makeThumb('🛋️', 'Sala'),
     variants: [
       {
         id: 'sala-compacta',
@@ -63,6 +68,7 @@ export const ROOM_CATEGORIES = [
   {
     key: 'quarto',
     name: 'Quarto',
+    thumbnail: makeThumb('🛏️', 'Quarto'),
     variants: [
       {
         id: 'quarto-single', title: 'Quarto Single', area: 10,
@@ -85,6 +91,7 @@ export const ROOM_CATEGORIES = [
   {
     key: 'cozinha',
     name: 'Cozinha',
+    thumbnail: makeThumb('🍳', 'Cozinha'),
     variants: [
       {
         id: 'cozinha-compacta', title: 'Cozinha Compacta', area: 8,
@@ -133,6 +140,7 @@ export const ROOM_CATEGORIES = [
   {
     key: 'escritorio',
     name: 'Escritório',
+    thumbnail: makeThumb('💼', 'Escritório'),
     variants: [
       {
         id: 'escritorio-compacto', title: 'Escritório Compacto', area: 9,
