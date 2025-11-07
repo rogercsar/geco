@@ -338,30 +338,31 @@ const generateCompositions = async () => {
             </Card>
           </section>
 
-          {/* Imagens geradas */}
-           <section className="space-y-3">
-             <div className="flex items-center justify-between">
-               <h2 className="text-xl font-bold text-secondary-900">Imagens geradas</h2>
-               <Button variant="outline" onClick={generateCompositions}>Gerar 3 imagens</Button>
-             </div>
-             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-               {Object.keys(selections).length ? [0,1,2].map((i) => (
-                 <Card key={i}>
-                   <CardHeader><CardTitle>Imagem {i+1}</CardTitle></CardHeader>
-                   <CardContent>
-                     <img
-                       src={compUrls[i] || getPlaceholderImage('Composição')}
-                       alt={`Composição ${i+1}`}
-                       className="w-full h-40 object-cover rounded"
-                     />
-                     <p className="text-secondary-600 mt-2">Composição aleatória das seleções atuais</p>
-                   </CardContent>
-                 </Card>
-               )) : (
-                 <div className="text-secondary-600">Selecione opções nos cômodos para gerar as composições</div>
-               )}
-             </div>
-           </section>
+          <AccordionItem title="Imagens geradas">
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-secondary-900">Imagens geradas</h2>
+                <Button variant="outline" onClick={generateCompositions}>Gerar 3 imagens</Button>
+              </div>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Object.keys(selections).length ? [0,1,2].map((i) => (
+                  <Card key={i}>
+                    <CardHeader><CardTitle>Imagem {i+1}</CardTitle></CardHeader>
+                    <CardContent>
+                      <img
+                        src={compUrls[i] || getPlaceholderImage('Composição')}
+                        alt={`Composição ${i+1}`}
+                        className="w-full h-40 object-cover rounded"
+                      />
+                      <p className="text-secondary-600 mt-2">Composição aleatória das seleções atuais</p>
+                    </CardContent>
+                  </Card>
+                )) : (
+                  <div className="text-secondary-600">Selecione opções nos cômodos para gerar as composições</div>
+                )}
+              </div>
+            </section>
+          </AccordionItem>
         </main>
     </div>
   );
