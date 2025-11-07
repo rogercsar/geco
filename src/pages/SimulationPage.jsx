@@ -6,7 +6,7 @@ import { Tabs } from '../components/ui/Tabs';
 import { toast } from 'react-hot-toast';
 import Sidebar from '../components/layout/Sidebar';
 import { Home, Sofa, Bed, Utensils, ShowerHead } from 'lucide-react';
-import { AccordionItem } from '../components/ui/Accordion';
+
 
 // Helper para imagem placeholder inline (SVG)
 const getPlaceholderImage = (label = 'Cômodo') => {
@@ -225,8 +225,8 @@ const generateCompositions = async () => {
             <FallbackTabs tabs={tabs} active={activeCat} onChange={setActiveCat} />
           ))}
 
-          {/* Variants */}
-          <section className="space-y-4">
+          {/* Grid de variantes com âncora */}
+          <section id="sec-opcoes" className="space-y-4">
             <h2 className="text-xl font-bold text-secondary-900">Opções do cômodo</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {category.variants.map((v, idx) => {
@@ -260,10 +260,10 @@ const generateCompositions = async () => {
             </div>
           </section>
 
-          <div className="group border border-secondary-200 rounded-lg bg-white">
-            <Card>
-              <CardHeader><CardTitle>Resultado da simulação</CardTitle></CardHeader>
-              <CardContent>
+          <section id="sec-resultado" className="group border border-secondary-200 rounded-lg bg-white">
+             <Card>
+               <CardHeader><CardTitle>Resultado da simulação</CardTitle></CardHeader>
+               <CardContent>
                 <div className="space-y-4">
                   <div className="mt-1">
                     <table className="w-full border border-secondary-200 rounded overflow-hidden">
@@ -344,54 +344,43 @@ const generateCompositions = async () => {
             </Card>
            </div>
 
-          <AccordionItem title="Imagens geradas">
-            <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-secondary-900">Imagens geradas</h2>
-                <Button variant="outline" onClick={generateCompositions}>Gerar 3 imagens</Button>
-              </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Object.keys(selections).length ? [0,1,2].map((i) => (
-                  <Card key={i}>
-                    <CardHeader><CardTitle>Imagem {i+1}</CardTitle></CardHeader>
-                    <CardContent>
-                      <img
-                        src={compUrls[i] || getPlaceholderImage('Composição')}
-                        alt={`Composição ${i+1}`}
-                        className="w-full h-40 object-cover rounded"
-                      />
-                      <p className="text-secondary-600 mt-2">Composição aleatória das seleções atuais</p>
-                    </CardContent>
-                  </Card>
-                )) : (
-                  <div className="text-secondary-600">Selecione opções nos cômodos para gerar as composições</div>
-                )}
-              </div>
-            </section>
-          </AccordionItem>
-+           <section className="space-y-3">
-+             <div className="flex items-center justify-between">
-+               <h2 className="text-xl font-bold text-secondary-900">Imagens geradas</h2>
-+               <Button variant="outline" onClick={generateCompositions}>Gerar 3 imagens</Button>
-+             </div>
-+             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-+               {Object.keys(selections).length ? [0,1,2].map((i) => (
-+                 <Card key={i}>
-+                   <CardHeader><CardTitle>Imagem {i+1}</CardTitle></CardHeader>
-+                   <CardContent>
-+                     <img
-+                       src={compUrls[i] || getPlaceholderImage('Composição')}
-+                       alt={`Composição ${i+1}`}
-+                       className="w-full h-40 object-cover rounded"
-+                     />
-+                     <p className="text-secondary-600 mt-2">Composição aleatória das seleções atuais</p>
-+                   </CardContent>
-+                 </Card>
-+               )) : (
-+                 <div className="text-secondary-600">Selecione opções nos cômodos para gerar as composições</div>
-+               )}
-+             </div>
-+           </section>
+          {/* Seção de imagens simples com âncora */}
+           <section id="sec-imagens" className="space-y-3">
+             <div className="flex items-center justify-between">
+               <h2 className="text-xl font-bold text-secondary-900">Imagens geradas</h2>
+               <Button variant="outline" onClick={generateCompositions}>Gerar 3 imagens</Button>
+             </div>
+             <div className="grid lg:grid-cols-3 gap-6">
+               {Object.keys(selections).length ? [0,1,2].map((i) => (
+                 <Card key={i}>
+                   <CardHeader><CardTitle>Imagem {i+1}</CardTitle></CardHeader>
+                   <CardContent>
+                     <img
+                       src={compUrls[i] || getPlaceholderImage('Composição')}
+                       alt={`Composição ${i+1}`}
+                       className="w-full h-40 object-cover rounded"
+                     />
+                     <p className="text-secondary-600 mt-2">Composição aleatória das seleções atuais</p>
+                   </CardContent>
+                 </Card>
+               )) : (
+                 <div className="text-secondary-600">Selecione opções nos cômodos para gerar as composições</div>
+               )}
+             </div>
+             <aside className="lg:col-span-1">
+               <Card className="sticky top-24">
+                 <CardHeader><CardTitle>Sumário</CardTitle></CardHeader>
+                 <CardContent>
+                   <nav className="space-y-2">
+                     <a href="#sec-opcoes" className="text-primary-700 hover:underline">Opções do cômodo</a>
+                     <a href="#sec-resultado" className="text-primary-700 hover:underline">Resultado da simulação</a>
+                     <a href="#sec-imagens" className="text-primary-700 hover:underline">Imagens geradas</a>
+                   </nav>
+                 </CardContent>
+               </Card>
+             </aside>
+           </section>
+
         </main>
     </div>
   );
@@ -399,19 +388,16 @@ const generateCompositions = async () => {
 
 // Ícone por tipo de cômodo (fallback seguro)
 const RoomIcon = ({ keyName }) => {
-  const k = String(keyName || '').toLowerCase();
   const size = 18;
-  if (k.includes('sala') || k.includes('estar') || k.includes('living')) {
-    return <Sofa size={size} className="text-secondary-700" />;
-  }
-  if (k.includes('quarto') || k.includes('suite') || k.includes('bed')) {
-    return <Bed size={size} className="text-secondary-700" />;
-  }
-  if (k.includes('cozinha') || k.includes('kitchen')) {
-    return <Utensils size={size} className="text-secondary-700" />;
-  }
-  if (k.includes('banheiro') || k.includes('lavabo') || k.includes('bath')) {
-    return <ShowerHead size={size} className="text-secondary-700" />;
-  }
-  return <Home size={size} className="text-secondary-700" />;
+  const k = String(keyName || '').toLowerCase();
+  const ICON_MAP = {
+    sala: Sofa,
+    quarto: Bed,
+    cozinha: Utensils,
+    banheiro: ShowerHead,
+    lavabo: ShowerHead,
+    living: Sofa,
+  };
+  const IconCmp = ICON_MAP[k] || Home;
+  return <IconCmp size={size} className="text-secondary-700" />;
 };
