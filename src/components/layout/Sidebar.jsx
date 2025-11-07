@@ -31,7 +31,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     },
     {
       id: 'simulation',
-      label: 'Simular Cômodo',
+      label: 'Simular Casa',
       icon: <Eye className="h-5 w-5" />,
       path: '/simulation'
     },
@@ -234,6 +234,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           </div>
         </div>
       </aside>
+      <div className="hidden lg:block lg:w-64" aria-hidden="true" />
     </>
   );
 };

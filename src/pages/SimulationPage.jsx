@@ -326,16 +326,17 @@ const generateCompositions = async () => {
                             {!paid && (
                               <Button onClick={async () => {
                                 try {
-                                  const base = import.meta.env.VITE_MP_API_URL || 'http://localhost:3001';
-                                  const resp = await fetch(`${base}/api/mp/create-preference`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                      amount: 5,
-                                      description: 'Acesso PDF/WhatsApp - Simulação',
-                                      success_url: window.location.origin + window.location.pathname
-                                    })
-                                  });
+                                  const base = import.meta.env.VITE_MP_API_URL || '';
+                                   const endpoint = base ? `${base}/api/mp/create-preference` : '/api/mp/create-preference';
+                                   const resp = await fetch(endpoint, {
+                                     method: 'POST',
+                                     headers: { 'Content-Type': 'application/json' },
+                                     body: JSON.stringify({
+                                       amount: 5,
+                                       description: 'Acesso PDF/WhatsApp - Simulação',
+                                       success_url: window.location.origin + window.location.pathname
+                                     })
+                                   });
                                   const data = await resp.json();
                                   if (!resp.ok) throw new Error(data?.message || 'Falha ao criar preferência');
                                   const url = data.init_point || data.sandbox_init_point;
