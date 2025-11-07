@@ -332,11 +332,10 @@ const generateCompositions = async () => {
                       </div>
                     </div>
                   </div>
-                </div>
                 <p className="text-secondary-600">Selecione opções nos cômodos para ver os totais.</p>
-            </CardContent>
-            </Card>
-          </section>
+                </CardContent>
+              </Card>
+            </section>
 
           <AccordionItem title="Imagens geradas">
             <section className="space-y-3">
