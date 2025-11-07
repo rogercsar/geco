@@ -22,7 +22,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useSelector } from 'react-redux';
 import { useBudget } from '../contexts/BudgetContext';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -41,7 +41,7 @@ import { useNavigate } from 'react-router-dom';
 
 const MyBudgetsPage = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { user: currentUser } = useSelector((state) => state.auth);
   const { getBudgetsByUser, deleteBudget, duplicateBudget, loading: budgetLoading } = useBudget();
   const [budgets, setBudgets] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useSelector } from 'react-redux';
 import { useBudget } from '../../contexts/BudgetContext';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
@@ -19,7 +19,7 @@ import { useNavigate } from 'react-router-dom';
 
 const NewBudgetPage = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { user: currentUser } = useSelector((state) => state.auth);
   const { createBudget } = useBudget();
   const [currentStep, setCurrentStep] = useState(0);
   const [budgetType, setBudgetType] = useState(null); // 'materials', 'labor', 'combined'
@@ -139,8 +139,8 @@ const NewBudgetPage = () => {
       const result = await createBudget({
         ...budgetData,
         total: totalValue,
-        userId: currentUser.id,
-        plano: currentUser.plano,
+        userId: currentUser?.id,
+        plano: currentUser?.plan,
         budgetMode: budgetMode,
         budgetType: budgetType
       });

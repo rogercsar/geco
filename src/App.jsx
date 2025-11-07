@@ -19,6 +19,7 @@ import Layout from './components/layout/Layout';
 import { useEffect } from 'react';
 import { initAuth } from './features/authSlice';
 import PaymentCallbackPage from './pages/payment/PaymentCallback.jsx';
+import LandingPage from './pages/LandingPage';
 
 function App() {
   const dispatch = useDispatch();
@@ -39,7 +40,8 @@ function App() {
             <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" />} />
             <Route path="/register" element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/" />} />
             <Route path="/forgot-password" element={!isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/" />} />
-+           <Route path="/payment/callback" element={<PaymentCallbackPage />} />
+            <Route path="/payment/callback" element={<PaymentCallbackPage />} />
+            <Route path="/" element={!isAuthenticated ? <LandingPage /> : <Navigate to="/dashboard" />} />
             
             <Route
               path="/*"
