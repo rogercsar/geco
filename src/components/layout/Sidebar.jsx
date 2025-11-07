@@ -14,6 +14,7 @@ import {
   User,
   LogOut
 } from 'lucide-react';
+import { Eye } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();

@@ -129,6 +129,42 @@ export default function SimulationPage() {
                   <p className="text-secondary-900 font-bold">Total geral dos cômodos</p>
                   <p className="text-secondary-900 font-extrabold">R$ {grandTotal.toFixed(2)}</p>
                 </div>
+                // Reset da simulação para começar do zero
+                const resetSimulation = () => {
+                  try {
+                    setSelections({});
+                    setPaid(false);
+                    localStorage.removeItem('selections');
+                    localStorage.removeItem('paid');
+                    toast.success('Simulação reiniciada');
+                  } catch (e) {}
+                };
+                <div className="mt-4">
+                  <table className="w-full border border-secondary-200 rounded overflow-hidden">
+                    <thead className="bg-secondary-50">
+                      <tr>
+                        <th className="text-left p-2">Cômodo</th>
+                        <th className="text-left p-2">Variante</th>
+                        <th className="text-left p-2">Área (m²)</th>
+                        <th className="text-right p-2">Total (R$)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summaries.map(({ key, variant, cost }) => (
+                        <tr key={key} className="border-t border-secondary-100">
+                          <td className="p-2">{catMap[key]?.name || categoryByKey[key]}</td>
+                          <td className="p-2">{variant.title}</td>
+                          <td className="p-2">{cost.area}</td>
+                          <td className="p-2 text-right">R$ {cost.total.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                      <tr className="border-t-2 border-secondary-300 bg-secondary-50">
+                        <td className="p-2 font-bold" colSpan={3}>Total geral</td>
+                        <td className="p-2 text-right font-extrabold">R$ {grandTotal.toFixed(2)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ) : (
               <p className="text-secondary-600">Selecione opções nos cômodos para ver os totais.</p>
