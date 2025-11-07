@@ -201,21 +201,21 @@ const generateCompositions = async () => {
 
           {/* Variants */}
           <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {category.variants.map(v => (
+            {category.variants.map((v, idx) => (
               <Card key={v.id} className={currentSelection?.id === v.id ? 'ring-2 ring-primary-600' : ''}>
                 <CardHeader>
                   <CardTitle>{v.title} • {v.area} m²</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <img
-                     src={resolveRoomImageSrc(category.key, 1)}
+                     src={resolveRoomImageSrc(category.key, Math.min((idx % 5) + 1, 5))}
                      data-attempt="0"
-                     onError={(e) => onRoomImgError(e, category.key, 1)}
+                     onError={(e) => onRoomImgError(e, category.key, Math.min((idx % 5) + 1, 5))}
                      alt={v.title}
                      className="w-full h-40 object-cover rounded"
                    />
                   <div className="mt-3 flex justify-between items-center">
-                    <Button variant="outline" onClick={() => setSelections(prev => ({ ...prev, [category.key]: v }))}>Selecionar</Button>
+                    <Button variant="outline" onClick={() => setSelections(prev => ({ ...prev, [category.key]: { ...v, _imgIndex: Math.min((idx % 5) + 1, 5) } }))}>Selecionar</Button>
                     <span className="text-secondary-600">Materiais médios</span>
                   </div>
                 </CardContent>
