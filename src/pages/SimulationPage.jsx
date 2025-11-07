@@ -399,18 +399,6 @@ const generateCompositions = async () => {
                      </div>
                    </section>
                  </div>
-                 <aside className="hidden lg:block">
-                   <Card className="sticky top-20">
-                     <CardHeader><CardTitle>Sumário</CardTitle></CardHeader>
-                     <CardContent>
-                       <nav className="space-y-2">
-                         <a href="#sec-opcoes" onClick={(e) => handleNavClick(e, 'sec-opcoes')} className={activeSec === 'sec-opcoes' ? 'text-primary-900 font-semibold' : 'text-primary-700 hover:underline'} aria-current={activeSec === 'sec-opcoes' ? 'true' : undefined}>Opções do cômodo</a>
-                         <a href="#sec-resultado" onClick={(e) => handleNavClick(e, 'sec-resultado')} className={activeSec === 'sec-resultado' ? 'text-primary-900 font-semibold' : 'text-primary-700 hover:underline'} aria-current={activeSec === 'sec-resultado' ? 'true' : undefined}>Resultado da simulação</a>
-                         <a href="#sec-imagens" onClick={(e) => handleNavClick(e, 'sec-imagens')} className={activeSec === 'sec-imagens' ? 'text-primary-900 font-semibold' : 'text-primary-700 hover:underline'} aria-current={activeSec === 'sec-imagens' ? 'true' : undefined}>Imagens geradas</a>
-                       </nav>
-                     </CardContent>
-                   </Card>
-                 </aside>
                </div>
 
         </main>
