@@ -38,7 +38,31 @@ export default function SimulationPage() {
   const [paid, setPaid] = useState(() => {
     try { return localStorage.getItem('simPaid') === 'true'; } catch { return false; }
   });
-
+  // Estado para destacar âncora ativa
+  const [activeSec, setActiveSec] = useState('sec-opcoes');
+  // Observer para atualizar seção ativa
+  useEffect(() => {
+    const ids = ['sec-opcoes', 'sec-resultado', 'sec-imagens'];
+    const elements = ids.map(id => document.getElementById(id)).filter(Boolean);
+    if (!elements.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]) setActiveSec(visible[0].target.id);
+      },
+      { root: null, threshold: [0.2, 0.5, 0.8], rootMargin: '0px 0px -30% 0px' }
+    );
+    elements.forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+  // Smooth scroll para cliques do sumário
+  const handleNavClick = (e, id) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
   useEffect(() => {
     try { localStorage.setItem('simSelections', JSON.stringify(selections)); } catch {}
   }, [selections]);
@@ -226,7 +250,7 @@ const generateCompositions = async () => {
           ))}
 
           {/* Grid de variantes com âncora */}
-          <section id="sec-opcoes" className="space-y-4">
+          <section id="sec-opcoes" className="space-y-4 scroll-mt-24">
             <h2 className="text-xl font-bold text-secondary-900">Opções do cômodo</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {category.variants.map((v, idx) => {
@@ -260,92 +284,92 @@ const generateCompositions = async () => {
             </div>
           </section>
 
-          <section id="sec-resultado" className="group border border-secondary-200 rounded-lg bg-white">
-             <Card>
-               <CardHeader><CardTitle>Resultado da simulação</CardTitle></CardHeader>
-               <CardContent>
-                <div className="space-y-4">
-                  <div className="mt-1">
-                    <table className="w-full border border-secondary-200 rounded overflow-hidden">
-                      <thead className="bg-secondary-50">
-                        <tr>
-                          <th className="text-left p-2">Cômodo</th>
-                          <th className="text-left p-2">Variante</th>
-                          <th className="text-left p-2">Área (m²)</th>
-                          <th className="text-right p-2">Total (R$)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {summaries.map(({ key, variant, cost }) => (
-                          <tr key={key} className="border-t border-secondary-100">
-                            <td className="p-2">{catMap[key]?.name || categoryByKey[key]}</td>
-                            <td className="p-2">{variant.title}</td>
-                            <td className="p-2">{cost.area}</td>
-                            <td className="p-2 text-right">R$ {cost.total.toFixed(2)}</td>
-                          </tr>
-                        ))}
-                        <tr className="border-t-2 border-secondary-300 bg-secondary-50">
-                          <td className="p-2 font-bold" colSpan={3}>Total geral</td>
-                          <td className="p-2 text-right font-extrabold">R$ {grandTotal.toFixed(2)}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="flex items-center justify-between gap-2 pt-2">
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" onClick={resetSimulation}>Nova simulação</Button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {!paid && (
-                        <Button onClick={async () => {
-                          try {
-                            const base = import.meta.env.VITE_MP_API_URL || 'http://localhost:3001';
-                            const resp = await fetch(`${base}/api/mp/create-preference`, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({
-                                amount: 5,
-                                description: 'Acesso PDF/WhatsApp - Simulação',
-                                success_url: window.location.origin + window.location.pathname
-                              })
-                            });
-                            const data = await resp.json();
-                            if (!resp.ok) throw new Error(data?.message || 'Falha ao criar preferência');
-                            const url = data.init_point || data.sandbox_init_point;
-                            if (!url) throw new Error('URL de checkout não recebida');
-                            window.open(url, '_blank');
-                            toast.info('Redirecionando para Mercado Pago...');
-                          } catch (e) {
-                            console.error(e);
-                            toast.error(e.message || 'Erro ao iniciar pagamento');
-                          }
-                        }}>Pagar R$ 5</Button>
-                      )}
-                      <Button variant="outline" onClick={() => {
-                        if (!paid) return toast.error('Pagamento necessário para baixar');
-                        if (!summaries.length) return toast.error('Selecione pelo menos um cômodo');
-                        const date = new Date().toLocaleString('pt-BR');
-                        const html = buildPdfHtml(summaries, catMap, grandTotal, date);
-                        const ok = openPdfWindow(html);
-                        if (!ok) toast.error('Pop-up bloqueado; permita pop-ups para gerar o PDF');
-                      }}>Baixar PDF</Button>
-                      <Button variant="outline" onClick={() => {
-                        const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '5511999999999';
-                        if (!summaries.length) return toast.error('Selecione pelo menos um cômodo');
-                        const lines = summaries.map(({ key, variant, cost }) => `${catMap[key]?.name || key}: ${variant.title} • Área ${cost.area} m² • Total R$ ${cost.total.toFixed(2)}`).join('\n');
-                        const text = encodeURIComponent(`Olá! Quero avançar com o projeto.\n\n${lines}\n\nTotal geral: R$ ${grandTotal.toFixed(2)}`);
-                        const link = `https://wa.me/${whatsappNumber}?text=${text}`;
-                        window.open(link, '_blank');
-                      }}>Quero esse projeto</Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-           </div>
+          <section id="sec-resultado" className="group border border-secondary-200 rounded-lg bg-white scroll-mt-24">
+              <Card>
+                <CardHeader><CardTitle>Resultado da simulação</CardTitle></CardHeader>
+                <CardContent>
+                 <div className="space-y-4">
+                   <div className="mt-1">
+                     <table className="w-full border border-secondary-200 rounded overflow-hidden">
+                       <thead className="bg-secondary-50">
+                         <tr>
+                           <th className="text-left p-2">Cômodo</th>
+                           <th className="text-left p-2">Variante</th>
+                           <th className="text-left p-2">Área (m²)</th>
+                           <th className="text-right p-2">Total (R$)</th>
+                         </tr>
+                       </thead>
+                       <tbody>
+                         {summaries.map(({ key, variant, cost }) => (
+                           <tr key={key} className="border-t border-secondary-100">
+                             <td className="p-2">{catMap[key]?.name || categoryByKey[key]}</td>
+                             <td className="p-2">{variant.title}</td>
+                             <td className="p-2">{cost.area}</td>
+                             <td className="p-2 text-right">R$ {cost.total.toFixed(2)}</td>
+                           </tr>
+                         ))}
+                         <tr className="border-t-2 border-secondary-300 bg-secondary-50">
+                           <td className="p-2 font-bold" colSpan={3}>Total geral</td>
+                           <td className="p-2 text-right font-extrabold">R$ {grandTotal.toFixed(2)}</td>
+                         </tr>
+                       </tbody>
+                     </table>
+                   </div>
+                   <div className="flex items-center justify-between gap-2 pt-2">
+                     <div className="flex items-center gap-2">
+                       <Button variant="outline" onClick={resetSimulation}>Nova simulação</Button>
+                     </div>
+                     <div className="flex items-center gap-2">
+                       {!paid && (
+                         <Button onClick={async () => {
+                           try {
+                             const base = import.meta.env.VITE_MP_API_URL || 'http://localhost:3001';
+                             const resp = await fetch(`${base}/api/mp/create-preference`, {
+                               method: 'POST',
+                               headers: { 'Content-Type': 'application/json' },
+                               body: JSON.stringify({
+                                 amount: 5,
+                                 description: 'Acesso PDF/WhatsApp - Simulação',
+                                 success_url: window.location.origin + window.location.pathname
+                               })
+                             });
+                             const data = await resp.json();
+                             if (!resp.ok) throw new Error(data?.message || 'Falha ao criar preferência');
+                             const url = data.init_point || data.sandbox_init_point;
+                             if (!url) throw new Error('URL de checkout não recebida');
+                             window.open(url, '_blank');
+                             toast.info('Redirecionando para Mercado Pago...');
+                           } catch (e) {
+                             console.error(e);
+                             toast.error(e.message || 'Erro ao iniciar pagamento');
+                           }
+                         }}>Pagar R$ 5</Button>
+                       )}
+                       <Button variant="outline" onClick={() => {
+                         if (!paid) return toast.error('Pagamento necessário para baixar');
+                         if (!summaries.length) return toast.error('Selecione pelo menos um cômodo');
+                         const date = new Date().toLocaleString('pt-BR');
+                         const html = buildPdfHtml(summaries, catMap, grandTotal, date);
+                         const ok = openPdfWindow(html);
+                         if (!ok) toast.error('Pop-up bloqueado; permita pop-ups para gerar o PDF');
+                       }}>Baixar PDF</Button>
+                       <Button variant="outline" onClick={() => {
+                         const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '5511999999999';
+                         if (!summaries.length) return toast.error('Selecione pelo menos um cômodo');
+                         const lines = summaries.map(({ key, variant, cost }) => `${catMap[key]?.name || key}: ${variant.title} • Área ${cost.area} m² • Total R$ ${cost.total.toFixed(2)}`).join('\n');
+                         const text = encodeURIComponent(`Olá! Quero avançar com o projeto.\n\n${lines}\n\nTotal geral: R$ ${grandTotal.toFixed(2)}`);
+                         const link = `https://wa.me/${whatsappNumber}?text=${text}`;
+                         window.open(link, '_blank');
+                       }}>Quero esse projeto</Button>
+                     </div>
+                   </div>
+                 </div>
+               </CardContent>
+             </Card>
+            </section>
 
           {/* Seção de imagens simples com âncora */}
-           <section id="sec-imagens" className="space-y-3">
+           <section id="sec-imagens" className="space-y-3 scroll-mt-24">
              <div className="flex items-center justify-between">
                <h2 className="text-xl font-bold text-secondary-900">Imagens geradas</h2>
                <Button variant="outline" onClick={generateCompositions}>Gerar 3 imagens</Button>
@@ -372,9 +396,9 @@ const generateCompositions = async () => {
                  <CardHeader><CardTitle>Sumário</CardTitle></CardHeader>
                  <CardContent>
                    <nav className="space-y-2">
-                     <a href="#sec-opcoes" className="text-primary-700 hover:underline">Opções do cômodo</a>
-                     <a href="#sec-resultado" className="text-primary-700 hover:underline">Resultado da simulação</a>
-                     <a href="#sec-imagens" className="text-primary-700 hover:underline">Imagens geradas</a>
+                     <a href="#sec-opcoes" onClick={(e) => handleNavClick(e, 'sec-opcoes')} className={activeSec === 'sec-opcoes' ? 'text-primary-900 font-semibold' : 'text-primary-700 hover:underline'} aria-current={activeSec === 'sec-opcoes' ? 'true' : undefined}>Opções do cômodo</a>
+                     <a href="#sec-resultado" onClick={(e) => handleNavClick(e, 'sec-resultado')} className={activeSec === 'sec-resultado' ? 'text-primary-900 font-semibold' : 'text-primary-700 hover:underline'} aria-current={activeSec === 'sec-resultado' ? 'true' : undefined}>Resultado da simulação</a>
+                     <a href="#sec-imagens" onClick={(e) => handleNavClick(e, 'sec-imagens')} className={activeSec === 'sec-imagens' ? 'text-primary-900 font-semibold' : 'text-primary-700 hover:underline'} aria-current={activeSec === 'sec-imagens' ? 'true' : undefined}>Imagens geradas</a>
                    </nav>
                  </CardContent>
                </Card>
