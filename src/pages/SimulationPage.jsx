@@ -367,3 +367,22 @@ const generateCompositions = async () => {
     </div>
   );
 }
+
+// Ícone por tipo de cômodo (fallback seguro)
+const RoomIcon = ({ keyName }) => {
+  const k = String(keyName || '').toLowerCase();
+  const size = 18;
+  if (k.includes('sala') || k.includes('estar') || k.includes('living')) {
+    return <Sofa size={size} className="text-secondary-700" />;
+  }
+  if (k.includes('quarto') || k.includes('suite') || k.includes('bed')) {
+    return <Bed size={size} className="text-secondary-700" />;
+  }
+  if (k.includes('cozinha') || k.includes('kitchen')) {
+    return <Utensils size={size} className="text-secondary-700" />;
+  }
+  if (k.includes('banheiro') || k.includes('lavabo') || k.includes('bath')) {
+    return <ShowerHead size={size} className="text-secondary-700" />;
+  }
+  return <Home size={size} className="text-secondary-700" />;
+};
