@@ -5,16 +5,16 @@ import Button from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 
 const features = [
+  { title: 'Simulação por cômodo', desc: 'Escolha opções pré-definidas e veja custo médio de materiais.' },
   { title: 'Orçamentos rápidos', desc: 'Crie orçamentos em minutos com etapas guiadas.' },
   { title: 'Materiais e mão de obra', desc: 'Controle detalhado de itens, quantidades e custos.' },
   { title: 'Relatórios e exportação', desc: 'Analise e compartilhe PDFs com seus clientes.' },
-  { title: 'Limites por plano', desc: 'Escale do Básico ao Empresarial conforme necessidade.' },
 ];
 
 const plans = [
-  { name: 'Básico', price: 'Grátis', perks: ['Até 3 orçamentos', 'Funções essenciais'] },
-  { name: 'Pro', price: 'R$ 29/mês', perks: ['Orçamentos ilimitados', 'Exportação PDF', 'Suporte prioritário'] },
-  { name: 'Empresarial', price: 'Sob consulta', perks: ['Equipe', 'Relatórios avançados', 'SLA'] },
+  { name: 'Básico', price: 'Grátis', perks: ['Até 3 orçamentos', 'Simulação de cômodos (visualização)', 'Download lista por R$ 5'] },
+  { name: 'Pro', price: 'R$ 29/mês', perks: ['Orçamentos ilimitados', 'Simulação de cômodos avançada', 'Exportação PDF', 'Suporte prioritário'] },
+  { name: 'Empresarial', price: 'Sob consulta', perks: ['Equipe e permissões', 'Relatórios avançados', 'SLA', 'Consultoria de projetos'] },
 ];
 
 const faqs = [
@@ -46,10 +46,10 @@ export default function LandingPage() {
           Orçamentos de obras, simples e poderosos
         </h1>
         <p className="mt-4 text-secondary-600 max-w-2xl mx-auto">
-          Crie, gerencie e compartilhe orçamentos com rapidez. Do básico ao empresarial.
+          Crie, gerencie e compartilhe orçamentos com rapidez. Simule cômodos com opções pré-definidas e veja custos médios de materiais.
         </p>
         <div className="mt-6 space-x-3">
-          <Link to="/register"><Button size="lg">Começar agora</Button></Link>
+          <Link to="/simulation"><Button size="lg">Simular cômodo</Button></Link>
           <Link to="/login"><Button size="lg" variant="outline">Já tenho conta</Button></Link>
         </div>
       </section>

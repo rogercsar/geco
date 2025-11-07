@@ -112,6 +112,20 @@ export const initAuth = createAsyncThunk('auth/initAuth', async (_, { rejectWith
   }
 });
 
+// Async thunk for logout (Supabase Auth signOut)
+export const logoutUser = createAsyncThunk('auth/logoutUser', async (_, { rejectWithValue }) => {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) return rejectWithValue(error.message);
+    // Opcional: limpar flags locais relacionados a simulação/download
+    // localStorage.removeItem('simulationDownloadReady');
+    // localStorage.removeItem('simulationVariantId');
+    return true;
+  } catch (e) {
+    return rejectWithValue(e.message);
+  }
+});
+
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -172,6 +186,20 @@ export const authSlice = createSlice({
         }
       })
       .addCase(initAuth.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || action.error.message;
+      })
+      // Logout
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.error = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || action.error.message;
       });

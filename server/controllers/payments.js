@@ -1,4 +1,4 @@
-const { MercadoPagoConfig, PreApproval } = require('mercadopago');
+const { MercadoPagoConfig, PreApproval, Preference } = require('mercadopago');
 // const User = require('../models/User'); // Mongo não será usado
 const { supabase } = require('../config/supabase');
 
@@ -7,7 +7,10 @@ const mp = () => {
   if (!accessToken) {
     throw new Error('MP_ACCESS_TOKEN não configurado no .env');
   }
-  return new PreApproval(new MercadoPagoConfig({ accessToken }));
+  return {
+    preapproval: new PreApproval(new MercadoPagoConfig({ accessToken })),
+    preference: new Preference(new MercadoPagoConfig({ accessToken }))
+  };
 };
 
 const PLAN_PRICES = {
@@ -46,7 +49,7 @@ exports.createSubscription = async (req, res) => {
     const backUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/callback`;
 
     const client = mp();
-    const preapproval = await client.create({
+    const preapproval = await client.preapproval.create({
       payer_email: email,
       back_url: backUrl,
       reason: `Assinatura Geco - ${planKey} (${label})`,
@@ -67,6 +70,44 @@ exports.createSubscription = async (req, res) => {
     return res.status(200).json({ success: true, init_point: initPoint, id: preapproval?.id });
   } catch (err) {
     console.error('Erro createSubscription:', err);
+    return res.status(500).json({ success: false, msg: err.message || 'Erro interno.' });
+  }
+};
+
+exports.createSimulationPayment = async (req, res) => {
+  try {
+    const { variantId, category } = req.body || {};
+    if (!variantId) {
+      return res.status(400).json({ success: false, msg: 'variantId é obrigatório.' });
+    }
+    const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+    const client = mp();
+    const preference = await client.preference.create({
+      items: [
+        {
+          title: 'Download lista de materiais (simulação)',
+          quantity: 1,
+          currency_id: 'BRL',
+          unit_price: 5.0,
+        },
+      ],
+      external_reference: `simulation:${variantId}${category ? `:${category}` : ''}`,
+      back_urls: {
+        success: `${frontend}/payment/callback`,
+        failure: `${frontend}/payment/callback`,
+        pending: `${frontend}/payment/callback`,
+      },
+      auto_return: 'approved',
+    });
+
+    const initPoint = preference?.init_point || preference?.sandbox_init_point;
+    if (!initPoint) {
+      return res.status(500).json({ success: false, msg: 'Falha ao criar pagamento da simulação.' });
+    }
+    return res.status(200).json({ success: true, init_point: initPoint, id: preference?.id });
+  } catch (err) {
+    console.error('Erro createSimulationPayment:', err);
     return res.status(500).json({ success: false, msg: err.message || 'Erro interno.' });
   }
 };

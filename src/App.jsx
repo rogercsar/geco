@@ -20,6 +20,7 @@ import { useEffect } from 'react';
 import { initAuth } from './features/authSlice';
 import PaymentCallbackPage from './pages/payment/PaymentCallback.jsx';
 import LandingPage from './pages/LandingPage';
+import SimulationPage from './pages/SimulationPage';
 
 function App() {
   const dispatch = useDispatch();
@@ -41,6 +42,7 @@ function App() {
             <Route path="/register" element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/" />} />
             <Route path="/forgot-password" element={!isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/" />} />
             <Route path="/payment/callback" element={<PaymentCallbackPage />} />
+            <Route path="/simulation" element={<SimulationPage />} />
             <Route path="/" element={!isAuthenticated ? <LandingPage /> : <Navigate to="/dashboard" />} />
             
             <Route
