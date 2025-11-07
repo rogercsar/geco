@@ -89,6 +89,8 @@ export const initAuth = createAsyncThunk('auth/initAuth', async (_, { rejectWith
   try {
     if (!supabase) return null;
     const { data: { user }, error } = await supabase.auth.getUser();
+    // Tratar sessão ausente como estado não autenticado, não como erro
+    if (error && /Auth session missing/i.test(error.message || '')) return null;
     if (error) return rejectWithValue(error.message);
     if (!user) return null;
 

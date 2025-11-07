@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ROOM_CATEGORIES, computeVariantCost } from '../data/simulation';
 import Button from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
@@ -29,55 +29,33 @@ function FallbackTabs({ tabs, active, onChange }) {
 
 export default function SimulationPage() {
   const [activeCat, setActiveCat] = useState(ROOM_CATEGORIES[0].key);
-  const [selectedVariant, setSelectedVariant] = useState(null);
-  const [paid, setPaid] = useState(false);
+  const [selections, setSelections] = useState(() => {
+    try { const s = localStorage.getItem('simSelections'); return s ? JSON.parse(s) : {}; } catch { return {}; }
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem('simSelections', JSON.stringify(selections)); } catch {}
+  }, [selections]);
 
   const category = useMemo(() => ROOM_CATEGORIES.find(c => c.key === activeCat), [activeCat]);
-  const cost = useMemo(() => selectedVariant ? computeVariantCost(selectedVariant) : null, [selectedVariant]);
+  const categoryByKey = useMemo(() => Object.fromEntries(ROOM_CATEGORIES.map(c => [c.key, c.name])), []);
+  const currentSelection = selections[activeCat] || null;
+  const summaries = useMemo(() => Object.entries(selections).map(([key, v]) => ({ key, variant: v, cost: computeVariantCost(v) })), [selections]);
+  const grandTotal = useMemo(() => summaries.reduce((sum, s) => sum + s.cost.total, 0), [summaries]);
 
   const tabs = ROOM_CATEGORIES.map(c => ({ key: c.key, label: c.name }));
 
-  const handlePay = () => {
-    // Mock de pagamento de R$ 5. Integração real: MercadoPago/Stripe com callback
-    setPaid(true);
-    toast.success('Pagamento de R$ 5 confirmado (demo)');
-  };
 
-  const handleDownloadCSV = () => {
-    if (!paid) {
-      toast.error('Pagamento de R$ 5 é necessário para baixar');
-      return;
-    }
-    if (!cost) return;
 
-    const rows = [['Item','Unidade','Quantidade','Custo Unitário','Total']];
-    cost.items.forEach(i => rows.push([i.name, i.unit, i.qty.toFixed(2), i.unitCost.toFixed(2), i.total.toFixed(2)]));
-    const csv = rows.map(r => r.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `materiais_${selectedVariant.id}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '5511999999999';
-  const handleWhatsApp = () => {
-    if (!selectedVariant || !cost) return;
-    const text = encodeURIComponent(`Olá! Quero avançar com o projeto \nCômodo: ${category.name} - ${selectedVariant.title}\nÁrea: ${selectedVariant.area} m²\nTotal materiais estimados: R$ ${cost.total.toFixed(2)}`);
-    const link = `https://wa.me/${whatsappNumber}?text=${text}`;
-    window.open(link, '_blank');
-  };
 
   const ImageGrid = () => (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {selectedVariant ? [1,2,3].map((i) => (
+      {currentSelection ? [1,2,3].map((i) => (
         <Card key={i}>
           <CardHeader><CardTitle>Imagem {i}</CardTitle></CardHeader>
           <CardContent>
-            <img src={selectedVariant.image} alt={`Preview ${i}`} className="w-full h-40 object-cover rounded" />
-            <p className="text-secondary-600 mt-2">Gerada com base na seleção (placeholder)</p>
+            <img src={currentSelection.image || getPlaceholderImage(currentSelection.title)} alt={`Preview ${i}`} className="w-full h-40 object-cover rounded" />
+            <p className="text-secondary-600 mt-2">Gerada com base na seleção atual (placeholder)</p>
           </CardContent>
         </Card>
       )) : (
@@ -106,14 +84,14 @@ export default function SimulationPage() {
       {/* Variants */}
       <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {category.variants.map(v => (
-          <Card key={v.id} className={selectedVariant?.id === v.id ? 'ring-2 ring-primary-600' : ''}>
+          <Card key={v.id} className={currentSelection?.id === v.id ? 'ring-2 ring-primary-600' : ''}>
             <CardHeader>
               <CardTitle>{v.title} • {v.area} m²</CardTitle>
             </CardHeader>
             <CardContent>
-              <img src={v.image} alt={v.title} className="w-full h-40 object-cover rounded" />
+              <img src={v.image || getPlaceholderImage(v.title)} alt={v.title} className="w-full h-40 object-cover rounded" />
               <div className="mt-3 flex justify-between items-center">
-                <Button variant="outline" onClick={() => setSelectedVariant(v)}>Selecionar</Button>
+                <Button variant="outline" onClick={() => setSelections(prev => ({ ...prev, [category.key]: v }))}>Selecionar</Button>
                 <span className="text-secondary-600">Materiais médios</span>
               </div>
             </CardContent>
@@ -126,46 +104,27 @@ export default function SimulationPage() {
         <Card>
           <CardHeader><CardTitle>Resultado da simulação</CardTitle></CardHeader>
           <CardContent>
-            {selectedVariant && cost ? (
-              <div className="space-y-3">
-                <p className="text-secondary-700">Cômodo: <strong>{category.name}</strong> • Opção: <strong>{selectedVariant.title}</strong> • Área: <strong>{cost.area} m²</strong></p>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="text-left text-secondary-600">
-                        <th className="py-2 pr-4">Item</th>
-                        <th className="py-2 pr-4">Unidade</th>
-                        <th className="py-2 pr-4">Qtd</th>
-                        <th className="py-2 pr-4">Custo un.</th>
-                        <th className="py-2 pr-4">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cost.items.map((i) => (
-                        <tr key={i.name} className="border-t border-secondary-200">
-                          <td className="py-2 pr-4">{i.name}</td>
-                          <td className="py-2 pr-4">{i.unit}</td>
-                          <td className="py-2 pr-4">{i.qty.toFixed(2)}</td>
-                          <td className="py-2 pr-4">R$ {i.unitCost.toFixed(2)}</td>
-                          <td className="py-2 pr-4">R$ {i.total.toFixed(2)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            {summaries.length > 0 ? (
+              <div className="space-y-4">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {summaries.map(({ key, variant, cost }) => (
+                    <div key={key} className="border border-secondary-200 rounded p-3 flex items-center gap-3">
+                      <img src={variant.image || getPlaceholderImage(categoryByKey[key])} alt={variant.title} className="w-20 h-20 object-cover rounded" />
+                      <div className="flex-1">
+                        <p className="text-secondary-700"><strong>{categoryByKey[key]}</strong> • {variant.title}</p>
+                        <p className="text-secondary-600">Área: {cost.area} m²</p>
+                      </div>
+                      <p className="text-secondary-900 font-semibold">R$ {cost.total.toFixed(2)}</p>
+                    </div>
+                  ))}
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-secondary-900 font-semibold">Total estimado de materiais: R$ {cost.total.toFixed(2)}</p>
-                  <div className="space-x-2">
-                    {!paid && (
-                      <Button onClick={handlePay}>Pagar R$ 5 para baixar</Button>
-                    )}
-                    <Button variant="outline" onClick={handleDownloadCSV} disabled={!paid}>Baixar lista (CSV)</Button>
-                    <Button variant="outline" onClick={handleWhatsApp}>Quero esse projeto</Button>
-                  </div>
+                  <p className="text-secondary-900 font-bold">Total geral dos cômodos</p>
+                  <p className="text-secondary-900 font-extrabold">R$ {grandTotal.toFixed(2)}</p>
                 </div>
               </div>
             ) : (
-              <p className="text-secondary-600">Selecione uma opção para ver o resultado.</p>
+              <p className="text-secondary-600">Selecione opções nos cômodos para ver os totais.</p>
             )}
           </CardContent>
         </Card>
@@ -176,7 +135,7 @@ export default function SimulationPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-secondary-900">Imagens geradas</h2>
           <Button variant="outline" onClick={() => {
-            if (!selectedVariant) return toast.error('Selecione uma opção');
+            if (!currentSelection) return toast.error('Selecione uma opção');
             toast.success('Imagens geradas (demo)');
           }}>Gerar 3 imagens</Button>
         </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../features/authSlice';
+import { logoutUser } from '../../features/authSlice';
 import { 
   Home, 
   Plus, 
@@ -19,7 +19,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
   const location = useLocation();
   const { user } = useSelector((state) => state.auth);
-  const isAdmin = user?.isAdmin;
+  const isAdmin = user?.is_admin;
 
   const menuItems = [
     {
@@ -47,6 +47,12 @@ const Sidebar = ({ isOpen, onClose }) => {
       path: '/favorites'
     },
     {
+      id: 'simulation',
+      label: 'Simular Cômodo',
+      icon: <Star className="h-5 w-5" />,
+      path: '/simulation'
+    },
+    {
       id: 'reports',
       label: 'Relatórios',
       icon: <BarChart3 className="h-5 w-5" />,
@@ -65,7 +71,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logoutUser());
     onClose();
   };
 
@@ -205,6 +211,14 @@ const Sidebar = ({ isOpen, onClose }) => {
                 >
                   <Settings className="h-4 w-4 mr-3" />
                   Configurações
+                </Link>
+                <Link
+                  to="/simulation"
+                  onClick={onClose}
+                  className="w-full flex items-center px-3 py-2 text-sm text-secondary-700 hover:bg-secondary-100 rounded-lg transition-colors"
+                >
+                  <BarChart3 className="h-4 w-4 mr-3" />
+                  Simular Cômodo
                 </Link>
                 <button
                   onClick={handleLogout}
