@@ -400,7 +400,14 @@ const generateCompositions = async () => {
                  </section>
                </div>
 
-
+{lightboxUrl && (
+  <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center" onClick={() => setLightboxUrl(null)}>
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button className="absolute -top-10 right-0 text-white text-2xl" aria-label="Fechar" onClick={() => setLightboxUrl(null)}>×</button>
+      <img src={lightboxUrl} alt="Imagem ampliada" className="max-w-[90vw] max-h-[85vh] rounded shadow-2xl" />
+    </div>
+  </div>
+)}
 
         </main>
     </div>
@@ -423,11 +430,4 @@ const RoomIcon = ({ keyName }) => {
   return <IconCmp size={size} className="text-secondary-700" />;
 };
 
-{lightboxUrl && (
-  <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center" onClick={() => setLightboxUrl(null)}>
-    <div className="relative" onClick={(e) => e.stopPropagation()}>
-      <button className="absolute -top-10 right-0 text-white text-2xl" aria-label="Fechar" onClick={() => setLightboxUrl(null)}>×</button>
-      <img src={lightboxUrl} alt="Imagem ampliada" className="max-w-[90vw] max-h-[85vh] rounded shadow-2xl" />
-    </div>
-  </div>
-)}
+}
