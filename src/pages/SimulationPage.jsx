@@ -369,6 +369,8 @@ const generateCompositions = async () => {
                     </CardContent>
                   </Card>
                 </section>
+              </div>
+            </div>
 
               {/* Seção de imagens simples com âncora */}
                <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] gap-8">
