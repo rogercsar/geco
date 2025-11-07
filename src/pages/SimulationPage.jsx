@@ -409,7 +409,7 @@ const generateCompositions = async () => {
                      </CardContent>
                    </Card>
                  </aside>
-               </section>
+               </div>
 
         </main>
     </div>
