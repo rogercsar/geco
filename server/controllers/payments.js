@@ -76,11 +76,17 @@ exports.createSubscription = async (req, res) => {
 
 exports.createSimulationPayment = async (req, res) => {
   try {
-    const { variantId, category } = req.body || {};
+    const { variantId, category, success_url, failure_url, pending_url } = req.body || {};
     if (!variantId) {
       return res.status(400).json({ success: false, msg: 'variantId é obrigatório.' });
     }
     const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+    const backUrls = {
+      success: success_url || `${frontend}/payment/success?origin=simulation`,
+      failure: failure_url || `${frontend}/payment/failure?origin=simulation`,
+      pending: pending_url || `${frontend}/payment/pending?origin=simulation`,
+    };
 
     const client = mp();
     const preference = await client.preference.create({
@@ -93,11 +99,7 @@ exports.createSimulationPayment = async (req, res) => {
         },
       ],
       external_reference: `simulation:${variantId}${category ? `:${category}` : ''}`,
-      back_urls: {
-        success: `${frontend}/payment/callback`,
-        failure: `${frontend}/payment/callback`,
-        pending: `${frontend}/payment/callback`,
-      },
+      back_urls: backUrls,
       auto_return: 'approved',
     });
 

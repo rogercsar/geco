@@ -25,6 +25,9 @@ const payments = require('./routes/payments');
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/budgets', budgets);
 app.use('/api/v1/payments', payments);
+// Alias para paths sem /api quando rodando via Netlify Functions
+app.use('/v1/payments', payments);
+// Rota legacy temporária
 app.post('/mp/create-preference', createSimulationPayment);
 
 module.exports = app;

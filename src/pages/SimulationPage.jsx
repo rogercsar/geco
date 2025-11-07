@@ -325,29 +325,40 @@ const generateCompositions = async () => {
                           <div className="flex items-center gap-2">
                             {!paid && (
                               <Button onClick={async () => {
-                                try {
-                                  const base = import.meta.env.VITE_MP_API_URL || '';
-                                   const endpoint = base ? `${base}/api/mp/create-preference` : '/api/mp/create-preference';
+                                 try {
+                                   if (!currentSelection) {
+                                     toast.error('Selecione uma opção do cômodo antes de pagar');
+                                     return;
+                                   }
+                                   const endpoint = '/api/v1/payments/simulation';
+                                   const successUrl = (import.meta.env.VITE_SUCCESS_URL)
+                                     || (window.location.origin + '/payment/success?origin=simulation');
+                                   const failureUrl = (import.meta.env.VITE_FAILURE_URL)
+                                     || (window.location.origin + '/payment/failure?origin=simulation');
+                                   const pendingUrl = (import.meta.env.VITE_PENDING_URL)
+                                     || (window.location.origin + '/payment/pending?origin=simulation');
                                    const resp = await fetch(endpoint, {
                                      method: 'POST',
                                      headers: { 'Content-Type': 'application/json' },
                                      body: JSON.stringify({
-                                       amount: 5,
-                                       description: 'Acesso PDF/WhatsApp - Simulação',
-                                       success_url: window.location.origin + window.location.pathname
+                                       variantId: currentSelection.id,
+                                       category: activeCat,
+                                       success_url: successUrl,
+                                       failure_url: failureUrl,
+                                       pending_url: pendingUrl
                                      })
                                    });
-                                  const data = await resp.json();
-                                  if (!resp.ok) throw new Error(data?.message || 'Falha ao criar preferência');
-                                  const url = data.init_point || data.sandbox_init_point;
-                                  if (!url) throw new Error('URL de checkout não recebida');
-                                  window.open(url, '_blank');
-                                  toast.info('Redirecionando para Mercado Pago...');
-                                } catch (e) {
-                                  console.error(e);
-                                  toast.error(e.message || 'Erro ao iniciar pagamento');
-                                }
-                              }}>Pagar R$ 5</Button>
+                                   const data = await resp.json();
+                                   if (!resp.ok) throw new Error(data?.msg || data?.message || 'Falha ao criar preferência');
+                                   const url = data.init_point || data.sandbox_init_point;
+                                   if (!url) throw new Error('URL de checkout não recebida');
+                                   window.location.assign(url);
+                                   toast.info('Redirecionando para Mercado Pago...');
+                                 } catch (e) {
+                                   console.error(e);
+                                   toast.error(e.message || 'Erro ao iniciar pagamento');
+                                 }
+                               }}>Pagar R$ 5</Button>
                             )}
                             <Button variant="outline" onClick={() => {
                               if (!paid) return toast.error('Pagamento necessário para baixar');
