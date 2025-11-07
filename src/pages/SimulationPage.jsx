@@ -133,6 +133,8 @@ const loadRoomImage = (key) => new Promise((resolve) => {
 
 const [compUrls, setCompUrls] = useState([null, null, null]);
 const shuffle = (arr) => arr.map(v => ({ r: Math.random(), v })).sort((a,b)=>a.r-b.r).map(o=>o.v);
+// Adiciona lightbox para ampliar imagens
+const [lightboxUrl, setLightboxUrl] = useState(null);
 
 const composeOrderToDataURL = async (order) => {
   const cols = Math.ceil(Math.sqrt(order.length));
@@ -212,7 +214,7 @@ const generateCompositions = async () => {
   const ImageGrid = () => (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {currentSelection ? [1,2,3].map((i) => (
-        <Card key={i}>
+        <Card key={i} className="border-2 border-primary-200 hover:border-primary-400 transition-colors">
           <CardHeader><CardTitle>Imagem {i}</CardTitle></CardHeader>
           <CardContent>
             <img
@@ -222,7 +224,6 @@ const generateCompositions = async () => {
               alt={`Preview ${i}`}
               className="w-full h-40 object-cover rounded"
             />
-            <p className="text-secondary-600 mt-2">Gerada com base na seleção atual (placeholder)</p>
           </CardContent>
         </Card>
       )) : (
@@ -260,7 +261,7 @@ const generateCompositions = async () => {
                     const cost = computeVariantCost(v);
                     const selected = currentSelection?.id === v.id;
                     return (
-                      <Card key={v.id} className={selected ? 'ring-2 ring-primary-600' : ''}>
+                      <Card key={v.id} className={`${selected ? 'border-2 border-primary-600' : 'border-2 border-primary-200'} hover:border-primary-400 transition-colors`}>
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2">
                             <RoomIcon keyName={category.key} />
@@ -287,7 +288,7 @@ const generateCompositions = async () => {
               </section>
 
               <section id="sec-resultado" className="group border border-secondary-200 rounded-lg bg-white scroll-mt-24">
-                  <Card>
+                  <Card className="border-2 border-primary-200">
                     <CardHeader><CardTitle>Resultado da simulação</CardTitle></CardHeader>
                     <CardContent>
                       <div className="space-y-4">
@@ -373,33 +374,33 @@ const generateCompositions = async () => {
             </div>
 
               {/* Seção de imagens simples com âncora */}
-               <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] gap-8">
-                 <div className="space-y-6">
-                   <section id="sec-imagens" className="space-y-3 scroll-mt-24">
-                     <div className="flex items-center justify-between">
-                       <h2 className="text-xl font-bold text-secondary-900">Imagens geradas</h2>
-                       <Button variant="outline" onClick={generateCompositions}>Gerar 3 imagens</Button>
-                     </div>
-                     <div className="grid lg:grid-cols-3 gap-6">
-                       {Object.keys(selections).length ? [0,1,2].map((i) => (
-                         <Card key={i}>
-                           <CardHeader><CardTitle>Imagem {i+1}</CardTitle></CardHeader>
-                           <CardContent>
-                             <img
-                               src={compUrls[i] || getPlaceholderImage('Composição')}
-                               alt={`Composição ${i+1}`}
-                               className="w-full h-40 object-cover rounded"
-                             />
-                             <p className="text-secondary-600 mt-2">Composição aleatória das seleções atuais</p>
-                           </CardContent>
-                         </Card>
-                       )) : (
-                         <div className="text-secondary-600">Selecione opções nos cômodos para gerar as composições</div>
-                       )}
-                     </div>
-                   </section>
-                 </div>
+               <div className="space-y-6">
+                 <section id="sec-imagens" className="space-y-3 scroll-mt-24">
+                   <div className="flex items-center justify-between">
+                     <h2 className="text-xl font-bold text-secondary-900">Imagens geradas</h2>
+                     <Button variant="outline" onClick={generateCompositions}>Gerar 3 imagens</Button>
+                   </div>
+                   <div className="grid lg:grid-cols-3 gap-6">
+                     {Object.keys(selections).length ? [0,1,2].map((i) => (
+                       <Card key={i} className="border-2 border-primary-200 hover:border-primary-400 transition-colors">
+                         <CardHeader><CardTitle>Imagem {i+1}</CardTitle></CardHeader>
+                         <CardContent>
+                           <img
+                             src={compUrls[i] || getPlaceholderImage('Composição')}
+                             alt={`Composição ${i+1}`}
+                             className="w-full h-40 object-cover rounded cursor-zoom-in"
+                             onClick={() => setLightboxUrl(compUrls[i] || getPlaceholderImage('Composição'))}
+                           />
+                         </CardContent>
+                       </Card>
+                     )) : (
+                       <div className="text-secondary-600">Selecione opções nos cômodos para gerar as composições</div>
+                     )}
+                   </div>
+                 </section>
                </div>
+
+
 
         </main>
     </div>
@@ -421,3 +422,12 @@ const RoomIcon = ({ keyName }) => {
   const IconCmp = ICON_MAP[k] || Home;
   return <IconCmp size={size} className="text-secondary-700" />;
 };
+
+{lightboxUrl && (
+  <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center" onClick={() => setLightboxUrl(null)}>
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button className="absolute -top-10 right-0 text-white text-2xl" aria-label="Fechar" onClick={() => setLightboxUrl(null)}>×</button>
+      <img src={lightboxUrl} alt="Imagem ampliada" className="max-w-[90vw] max-h-[85vh] rounded shadow-2xl" />
+    </div>
+  </div>
+)}
