@@ -43,6 +43,28 @@ export default function SimulationPage() {
     try { localStorage.setItem('simPaid', paid ? 'true' : 'false'); } catch {}
   }, [paid]);
 
+  useEffect(() => {
+    try {
+      const p = new URLSearchParams(window.location.search).get('paid');
+      if (p === '1') {
+        setPaid(true);
+        toast.success('Pagamento aprovado');
+        const url = new URL(window.location.href);
+        url.searchParams.delete('paid');
+        window.history.replaceState({}, '', url.toString());
+      }
+    } catch {}
+  }, []);
+  
+  const resetSimulation = () => {
+    setSelections({});
+    setPaid(false);
+    try {
+      localStorage.removeItem('simSelections');
+      localStorage.removeItem('simPaid');
+    } catch {}
+    toast.success('Simulação reiniciada');
+  };
   const category = useMemo(() => ROOM_CATEGORIES.find(c => c.key === activeCat), [activeCat]);
   const categoryByKey = useMemo(() => Object.fromEntries(ROOM_CATEGORIES.map(c => [c.key, c.name])), []);
   const catMap = useMemo(() => Object.fromEntries(ROOM_CATEGORIES.map(c => [c.key, c])), []);
@@ -110,86 +132,104 @@ export default function SimulationPage() {
       <section>
         <Card>
           <CardHeader><CardTitle>Resultado da simulação</CardTitle></CardHeader>
+          // Replace broken CardContent block with valid JSX
           <CardContent>
-            // ... existing code ...
-                       <td className="p-2 text-right">R$ {cost.total.toFixed(2)}</td>
-                     </tr>
-                   ))}
-                   <tr className="border-t-2 border-secondary-300 bg-secondary-50">
-                     <td className="p-2 font-bold" colSpan={3}>Total geral</td>
-                     <td className="p-2 text-right font-extrabold">R$ {grandTotal.toFixed(2)}</td>
-                   </tr>
-                 </tbody>
-                 </table>
-               </div>
-               <div className="flex items-center justify-between gap-2 pt-2">
-                 <div className="flex items-center gap-2">
-                   <Button variant="outline" onClick={resetSimulation}>Nova simulação</Button>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   {!paid && (
-                     <Button onClick={async () => {
-                       try {
-                         const base = import.meta.env.VITE_MP_API_URL || 'http://localhost:3001';
-                         const resp = await fetch(`${base}/api/mp/create-preference`, {
-                           method: 'POST',
-                           headers: { 'Content-Type': 'application/json' },
-                           body: JSON.stringify({
-                             amount: 5,
-                             description: 'Acesso PDF/WhatsApp - Simulação',
-                             success_url: window.location.origin + window.location.pathname
-                           })
-                         });
-                         const data = await resp.json();
-                         if (!resp.ok) throw new Error(data?.message || 'Falha ao criar preferência');
-                         const url = data.init_point || data.sandbox_init_point;
-                         if (!url) throw new Error('URL de checkout não recebida');
-                         window.open(url, '_blank');
-                         toast.info('Redirecionando para Mercado Pago...');
-                       } catch (e) {
-                         console.error(e);
-                         toast.error(e.message || 'Erro ao iniciar pagamento');
-                       }
-                     }}>Pagar R$ 5 para baixar</Button>
-                   )}
-                   <Button variant="outline" onClick={() => {
-                     if (!paid) return toast.error('Pagamento necessário para baixar');
-                     if (!summaries.length) return toast.error('Selecione pelo menos um cômodo');
-                     const date = new Date().toLocaleString('pt-BR');
-                     const sections = summaries.map(({ key, variant, cost }) => {
-                       const itemsRows = cost.items.map(i => `<tr><td style=\"padding:8px;border:1px solid #ddd;\">${i.name}</td><td style=\"padding:8px;border:1px solid #ddd;\">${i.unit}</td><td style=\"padding:8px;border:1px solid #ddd;\">${i.qty.toFixed(2)}</td><td style=\"padding:8px;border:1px solid #ddd;\">R$ ${i.unitCost.toFixed(2)}</td><td style=\"padding:8px;border:1px solid #ddd;\">R$ ${i.total.toFixed(2)}</td></tr>`).join('');
-                       return `<h2 style=\"font-size:16px;margin:16px 0 6px;\">${catMap[key]?.name || key} • ${variant.title} • Área ${cost.area} m²</h2>` +
-                              `<table style=\"border-collapse:collapse;width:100%;\"><thead><tr>` +
-                              `<th style=\"text-align:left;padding:8px;border:1px solid #ddd;\">Item</th>` +
-                              `<th style=\"text-align:left;padding:8px;border:1px solid #ddd;\">Unidade</th>` +
-                              `<th style=\"text-align:left;padding:8px;border:1px solid #ddd;\">Qtd</th>` +
-                              `<th style=\"text-align:left;padding:8px;border:1px solid #ddd;\">Custo un.</th>` +
-                              `<th style=\"text-align:left;padding:8px;border:1px solid #ddd;\">Total</th>` +
-                              `</tr></thead><tbody>${itemsRows}</tbody></table>` +
-                              `<div style=\"font-weight:700;margin-top:6px;\">Total do cômodo: R$ ${cost.total.toFixed(2)}</div>`;
-                     }).join('');
-                     const html = `<!doctype html><html><head><meta charset=\"utf-8\"/><title>Simulação de Cômodos</title><style>body{font-family:Arial,sans-serif;color:#111827;padding:16px;}h1{font-size:20px;margin-bottom:4px}.header{border-bottom:1px solid #e5e7eb;padding-bottom:8px;margin-bottom:12px}.total{font-weight:800;font-size:16px;margin-top:10px}</style></head><body><div class=\"header\"><h1>Simulação de Cômodos</h1><div>Data: ${date}</div></div>${sections}<div class=\"total\">Total geral: R$ ${grandTotal.toFixed(2)}</div></body></html>`;
-                     const win = window.open('', '_blank');
-                     if (!win) return toast.error('Pop-up bloqueado; permita pop-ups para gerar o PDF');
-                     win.document.write(html);
-                     win.document.close();
-                     win.focus();
-                     win.print();
-                   }}>Baixar PDF</Button>
-                   <Button variant="outline" onClick={() => {
-                     const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '5511999999999';
-                     if (!summaries.length) return toast.error('Selecione pelo menos um cômodo');
-                     const lines = summaries.map(({ key, variant, cost }) => `${catMap[key]?.name || key}: ${variant.title} • Área ${cost.area} m² • Total R$ ${cost.total.toFixed(2)}`).join('\n');
-                     const text = encodeURIComponent(`Olá! Quero avançar com o projeto.\n\n${lines}\n\nTotal geral: R$ ${grandTotal.toFixed(2)}`);
-                     const link = `https://wa.me/${whatsappNumber}?text=${text}`;
-                     window.open(link, '_blank');
-                   }}>Quero esse projeto</Button>
-                 </div>
-               </div>
-             ) : (
-               <p className="text-secondary-600">Selecione opções nos cômodos para ver os totais.</p>
-             )}
-           </CardContent>
+            <div className="space-y-4">
+              <div className="mt-1">
+                <table className="w-full border border-secondary-200 rounded overflow-hidden">
+                  <thead className="bg-secondary-50">
+                    <tr>
+                      <th className="text-left p-2">Cômodo</th>
+                      <th className="text-left p-2">Variante</th>
+                      <th className="text-left p-2">Área (m²)</th>
+                      <th className="text-right p-2">Total (R$)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {summaries.map(({ key, variant, cost }) => (
+                      <tr key={key} className="border-t border-secondary-100">
+                        <td className="p-2">{catMap[key]?.name || categoryByKey[key]}</td>
+                        <td className="p-2">{variant.title}</td>
+                        <td className="p-2">{cost.area}</td>
+                        <td className="p-2 text-right">R$ {cost.total.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                    <tr className="border-t-2 border-secondary-300 bg-secondary-50">
+                      <td className="p-2 font-bold" colSpan={3}>Total geral</td>
+                      <td className="p-2 text-right font-extrabold">R$ {grandTotal.toFixed(2)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex items-center justify-between gap-2 pt-2">
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" onClick={resetSimulation}>Nova simulação</Button>
+                </div>
+                <div className="flex items-center gap-2">
+                  {!paid && (
+                    <Button onClick={async () => {
+                      try {
+                        const base = import.meta.env.VITE_MP_API_URL || 'http://localhost:3001';
+                        const resp = await fetch(`${base}/api/mp/create-preference`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            amount: 5,
+                            description: 'Acesso PDF/WhatsApp - Simulação',
+                            success_url: window.location.origin + window.location.pathname
+                          })
+                        });
+                        const data = await resp.json();
+                        if (!resp.ok) throw new Error(data?.message || 'Falha ao criar preferência');
+                        const url = data.init_point || data.sandbox_init_point;
+                        if (!url) throw new Error('URL de checkout não recebida');
+                        window.open(url, '_blank');
+                        toast.info('Redirecionando para Mercado Pago...');
+                      } catch (e) {
+                        console.error(e);
+                        toast.error(e.message || 'Erro ao iniciar pagamento');
+                      }
+                    }}>Pagar R$ 5 para baixar</Button>
+                  )}
+                  <Button variant="outline" onClick={() => {
+                    if (!paid) return toast.error('Pagamento necessário para baixar');
+                    if (!summaries.length) return toast.error('Selecione pelo menos um cômodo');
+                    const date = new Date().toLocaleString('pt-BR');
+                    const sections = summaries.map(({ key, variant, cost }) => {
+                      const itemsRows = cost.items.map(i => `<tr><td style=\"padding:8px;border:1px solid #ddd;\">${i.name}</td><td style=\"padding:8px;border:1px solid #ddd;\">${i.unit}</td><td style=\"padding:8px;border:1px solid #ddd;\">${i.qty.toFixed(2)}</td><td style=\"padding:8px;border:1px solid #ddd;\">R$ ${i.unitCost.toFixed(2)}</td><td style=\"padding:8px;border:1px solid #ddd;\">R$ ${i.total.toFixed(2)}</td></tr>`).join('');
+                      return `<h2 style=\"font-size:16px;margin:16px 0 6px;\">${catMap[key]?.name || key} • ${variant.title} • Área ${cost.area} m²</h2>` +
+                             `<table style=\"border-collapse:collapse;width:100%;\"><thead><tr>` +
+                             `<th style=\"text-align:left;padding:8px;border:1px solid #ddd;\">Item</th>` +
+                             `<th style=\"text-align:left;padding:8px;border:1px solid #ddd;\">Unidade</th>` +
+                             `<th style=\"text-align:left;padding:8px;border:1px solid #ddd;\">Qtd</th>` +
+                             `<th style=\"text-align:left;padding:8px;border:1px solid #ddd;\">Custo un.</th>` +
+                             `<th style=\"text-align:left;padding:8px;border:1px solid #ddd;\">Total</th>` +
+                             `</tr></thead><tbody>${itemsRows}</tbody></table>` +
+                             `<div style=\"font-weight:700;margin-top:6px;\">Total do cômodo: R$ ${cost.total.toFixed(2)}</div>`;
+                    }).join('');
+                    const html = `<!doctype html><html><head><meta charset=\"utf-8\"/><title>Simulação de Cômodos</title><style>body{font-family:Arial,sans-serif;color:#111827;padding:16px;}h1{font-size:20px;margin-bottom:4px}.header{border-bottom:1px solid #e5e7eb;padding-bottom:8px;margin-bottom:12px}.total{font-weight:800;font-size:16px;margin-top:10px}</style></head><body><div class=\"header\"><h1>Simulação de Cômodos</h1><div>Data: ${date}</div></div>${sections}<div class=\"total\">Total geral: R$ ${grandTotal.toFixed(2)}</div></body></html>`;
+                    const win = window.open('', '_blank');
+                    if (!win) return toast.error('Pop-up bloqueado; permita pop-ups para gerar o PDF');
+                    win.document.write(html);
+                    win.document.close();
+                    win.focus();
+                    win.print();
+                  }}>Baixar PDF</Button>
+                  <Button variant="outline" onClick={() => {
+                    const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '5511999999999';
+                    if (!summaries.length) return toast.error('Selecione pelo menos um cômodo');
+                    const lines = summaries.map(({ key, variant, cost }) => `${catMap[key]?.name || key}: ${variant.title} • Área ${cost.area} m² • Total R$ ${cost.total.toFixed(2)}`).join('\n');
+                    const text = encodeURIComponent(`Olá! Quero avançar com o projeto.\n\n${lines}\n\nTotal geral: R$ ${grandTotal.toFixed(2)}`);
+                    const link = `https://wa.me/${whatsappNumber}?text=${text}`;
+                    window.open(link, '_blank');
+                  }}>Quero esse projeto</Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-secondary-600">Selecione opções nos cômodos para ver os totais.</p>
+          )}
+        </CardContent>
         </Card>
       </section>
 
