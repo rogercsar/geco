@@ -49,7 +49,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     {
       id: 'simulation',
       label: 'Simular Cômodo',
-      icon: <Star className="h-5 w-5" />,
+      icon: <Eye className="h-5 w-5" />,
       path: '/simulation'
     },
     {
@@ -212,14 +212,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                   <Settings className="h-4 w-4 mr-3" />
                   Configurações
                 </Link>
-                <Link
-                  to="/simulation"
-                  onClick={onClose}
-                  className="w-full flex items-center px-3 py-2 text-sm text-secondary-700 hover:bg-secondary-100 rounded-lg transition-colors"
-                >
-                  <BarChart3 className="h-4 w-4 mr-3" />
-                  Simular Cômodo
-                </Link>
+                
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center px-3 py-2 text-sm text-red-700 hover:bg-red-50 rounded-lg transition-colors"
