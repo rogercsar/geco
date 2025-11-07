@@ -429,5 +429,3 @@ const RoomIcon = ({ keyName }) => {
   const IconCmp = ICON_MAP[k] || Home;
   return <IconCmp size={size} className="text-secondary-700" />;
 };
-
-}
