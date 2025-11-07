@@ -85,6 +85,8 @@ const onRoomImgError = (e, key, i) => {
 };
 
 // --------- Mosaico do projeto (canvas) ---------
+// Remover o bloco de mosaico e implementar composição nos 3 campos
+// Helpers de imagem local para cada cômodo
 const getRoomPrimaryImageSrc = (key) => `/simulacoes/${key}/${key}1.jpg`;
 const loadRoomImage = (key) => new Promise((resolve) => {
   const tryLoad = (srcs, idx = 0) => {
@@ -103,24 +105,20 @@ const loadRoomImage = (key) => new Promise((resolve) => {
   tryLoad([getRoomPrimaryImageSrc(key), `/simulacoes/${key}/${key}1.png`]);
 });
 
-const mosaicCanvasRefs = [useRef(null), useRef(null), useRef(null)];
-const [mosaicReady, setMosaicReady] = useState(false);
-
+const [compUrls, setCompUrls] = useState([null, null, null]);
 const shuffle = (arr) => arr.map(v => ({ r: Math.random(), v })).sort((a,b)=>a.r-b.r).map(o=>o.v);
 
-const drawMosaic = async (canvas, order, costsByKey) => {
-  if (!canvas) return;
+const composeOrderToDataURL = async (order) => {
   const cols = Math.ceil(Math.sqrt(order.length));
   const rows = Math.ceil(order.length / cols);
   const tileW = 320, tileH = 200, gap = 6;
   const width = cols * tileW + (cols - 1) * gap;
-  const height = rows * tileH + (rows - 1) * gap + 28; // espaço para rodapé
-  canvas.width = width;
-  canvas.height = height;
+  const height = rows * tileH + (rows - 1) * gap;
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#f3f4f6';
   ctx.fillRect(0, 0, width, height);
-
   for (let idx = 0; idx < order.length; idx++) {
     const key = order[idx];
     const img = await loadRoomImage(key);
@@ -136,34 +134,22 @@ const drawMosaic = async (canvas, order, costsByKey) => {
     try { ctx.drawImage(img, offsetX, offsetY, drawW, drawH); } catch {}
     ctx.strokeStyle = '#e5e7eb';
     ctx.strokeRect(x, y, tileW, tileH);
-    // Label superior
-    ctx.fillStyle = 'rgba(17,24,39,0.9)';
-    ctx.font = 'bold 14px Arial';
-    ctx.fillText(catMap[key]?.name || key, x + 8, y + 20);
-    // Overlay inferior com área e total
-    const cost = costsByKey[key];
-    if (cost) {
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.fillRect(x + 4, y + tileH - 28, tileW - 8, 24);
-      ctx.fillStyle = '#111827';
-      ctx.font = '12px Arial';
-      ctx.fillText(`Área ${cost.area} m² • Total R$ ${cost.total.toFixed(2)}`, x + 10, y + tileH - 12);
-    }
   }
-
-  // Rodapé com resumo
-  const summary = order.map(k => {
-    const c = costsByKey[k];
-    return `${catMap[k]?.name || k}: R$ ${c ? c.total.toFixed(2) : '0.00'}`;
-  }).join('  |  ');
-  ctx.fillStyle = '#111827';
-  ctx.font = 'bold 13px Arial';
-  ctx.fillText(summary, 8, height - 8);
+  return canvas.toDataURL('image/png');
 };
 
-const generateMosaics = async () => {
+const generateCompositions = async () => {
   const keys = Object.keys(selections);
   if (!keys.length) { toast.error('Selecione pelo menos um cômodo'); return; }
+  const orders = [shuffle([...keys]), shuffle([...keys]), shuffle([...keys])];
+  const urls = [
+    await composeOrderToDataURL(orders[0]),
+    await composeOrderToDataURL(orders[1]),
+    await composeOrderToDataURL(orders[2]),
+  ];
+  setCompUrls(urls);
+  toast.success('3 imagens geradas a partir das seleções');
+};
   const costsByKey = Object.fromEntries(keys.map(k => [k, computeVariantCost(selections[k]) ]));
   const orders = [shuffle([...keys]), shuffle([...keys]), shuffle([...keys])];
   await drawMosaic(mosaicCanvasRefs[0].current, orders[0], costsByKey);
