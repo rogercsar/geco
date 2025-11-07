@@ -139,37 +139,19 @@ const composeOrderToDataURL = async (order) => {
 };
 
 const generateCompositions = async () => {
-  const keys = Object.keys(selections);
-  if (!keys.length) { toast.error('Selecione pelo menos um cômodo'); return; }
-  const orders = [shuffle([...keys]), shuffle([...keys]), shuffle([...keys])];
-  const urls = [
-    await composeOrderToDataURL(orders[0]),
-    await composeOrderToDataURL(orders[1]),
-    await composeOrderToDataURL(orders[2]),
-  ];
-  setCompUrls(urls);
-  toast.success('3 imagens geradas a partir das seleções');
-};
-  const costsByKey = Object.fromEntries(keys.map(k => [k, computeVariantCost(selections[k]) ]));
-  const orders = [shuffle([...keys]), shuffle([...keys]), shuffle([...keys])];
-  await drawMosaic(mosaicCanvasRefs[0].current, orders[0], costsByKey);
-  await drawMosaic(mosaicCanvasRefs[1].current, orders[1], costsByKey);
-  await drawMosaic(mosaicCanvasRefs[2].current, orders[2], costsByKey);
-  setMosaicReady(true);
-  toast.success('3 mosaicos gerados com ordens aleatórias');
-};
-
-const downloadMosaic = (idx) => {
-  const canvas = mosaicCanvasRefs[idx]?.current;
-  if (!canvas) return;
-  const url = canvas.toDataURL('image/png');
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `mosaico-projeto-${idx+1}.png`;
-  a.click();
-};
-  const summaries = useMemo(() => Object.entries(selections).map(([key, v]) => ({ key, variant: v, cost: computeVariantCost(v) })), [selections]);
-  const grandTotal = useMemo(() => summaries.reduce((sum, s) => sum + s.cost.total, 0), [summaries]);
+   const keys = Object.keys(selections);
+   if (!keys.length) { toast.error('Selecione pelo menos um cômodo'); return; }
+   const orders = [shuffle([...keys]), shuffle([...keys]), shuffle([...keys])];
+   const urls = [
+     await composeOrderToDataURL(orders[0]),
+     await composeOrderToDataURL(orders[1]),
+     await composeOrderToDataURL(orders[2]),
+   ];
+   setCompUrls(urls);
+   toast.success('3 imagens geradas a partir das seleções');
+ };
+   const summaries = useMemo(() => Object.entries(selections).map(([key, v]) => ({ key, variant: v, cost: computeVariantCost(v) })), [selections]);
+   const grandTotal = useMemo(() => summaries.reduce((sum, s) => sum + s.cost.total, 0), [summaries]);
 
   const tabs = ROOM_CATEGORIES.map(c => ({ key: c.key, label: c.name }));
 
@@ -339,40 +321,29 @@ const downloadMosaic = (idx) => {
           </section>
 
           {/* Imagens geradas */}
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-secondary-900">Imagens geradas</h2>
-              <Button variant="outline" onClick={() => {
-                if (!currentSelection) return toast.error('Selecione uma opção');
-                toast.success('Imagens geradas (demo)');
-              }}>Gerar 3 imagens</Button>
-            </div>
-            <ImageGrid />
-          </section>
-
-          {/* Mosaico do projeto */}
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-secondary-900">Mosaico do projeto</h2>
-              <div className="flex items-center gap-2">
-                <Button onClick={generateMosaics}>Gerar mosaicos (3 ordens)</Button>
-                <Button variant="outline" onClick={() => { if (!mosaicReady) return toast.error('Gere os mosaicos primeiro'); downloadMosaic(0); }}>Baixar #1</Button>
-                <Button variant="outline" onClick={() => { if (!mosaicReady) return toast.error('Gere os mosaicos primeiro'); downloadMosaic(1); }}>Baixar #2</Button>
-                <Button variant="outline" onClick={() => { if (!mosaicReady) return toast.error('Gere os mosaicos primeiro'); downloadMosaic(2); }}>Baixar #3</Button>
-              </div>
-            </div>
-            <Card>
-              <CardContent>
-                <canvas ref={mosaicCanvasRefs[0]} className="w-full border border-secondary-200 rounded" />
-                <canvas ref={mosaicCanvasRefs[1]} className="w-full border border-secondary-200 rounded" />
-                <canvas ref={mosaicCanvasRefs[2]} className="w-full border border-secondary-200 rounded" />
-                {!Object.keys(selections).length && (
-                  <p className="text-secondary-600 mt-2">Selecione cômodos nas abas acima para compor os mosaicos.</p>
-                )}
-              </CardContent>
-            </Card>
-          </section
-          >
+           <section className="space-y-3">
+             <div className="flex items-center justify-between">
+               <h2 className="text-xl font-bold text-secondary-900">Imagens geradas</h2>
+               <Button variant="outline" onClick={generateCompositions}>Gerar 3 imagens</Button>
+             </div>
+             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+               {Object.keys(selections).length ? [0,1,2].map((i) => (
+                 <Card key={i}>
+                   <CardHeader><CardTitle>Imagem {i+1}</CardTitle></CardHeader>
+                   <CardContent>
+                     <img
+                       src={compUrls[i] || getPlaceholderImage('Composição')}
+                       alt={`Composição ${i+1}`}
+                       className="w-full h-40 object-cover rounded"
+                     />
+                     <p className="text-secondary-600 mt-2">Composição aleatória das seleções atuais</p>
+                   </CardContent>
+                 </Card>
+               )) : (
+                 <div className="text-secondary-600">Selecione opções nos cômodos para gerar as composições</div>
+               )}
+             </div>
+           </section>
         </main>
       </div>
     </div>
