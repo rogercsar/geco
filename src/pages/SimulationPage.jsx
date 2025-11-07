@@ -207,7 +207,13 @@ const generateCompositions = async () => {
                   <CardTitle>{v.title} • {v.area} m²</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <img src={v.image || category.thumbnail || getPlaceholderImage(v.title)} alt={v.title} className="w-full h-40 object-cover rounded" />
+                  <img
+                     src={resolveRoomImageSrc(category.key, 1)}
+                     data-attempt="0"
+                     onError={(e) => onRoomImgError(e, category.key, 1)}
+                     alt={v.title}
+                     className="w-full h-40 object-cover rounded"
+                   />
                   <div className="mt-3 flex justify-between items-center">
                     <Button variant="outline" onClick={() => setSelections(prev => ({ ...prev, [category.key]: v }))}>Selecionar</Button>
                     <span className="text-secondary-600">Materiais médios</span>
