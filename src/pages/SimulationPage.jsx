@@ -227,31 +227,37 @@ const generateCompositions = async () => {
 
           {/* Variants */}
           <section className="space-y-4">
-            {category.variants.map((v, idx) => {
-              const imgIndex = Math.min((idx % 5) + 1, 5);
-              const cost = computeVariantCost(v);
-              return (
-                <AccordionItem
-                  key={v.id}
-                  title={v.title}
-                  icon={<RoomIcon keyName={category.key} />}
-                  badges={[`${v.area} m²`, `R$ ${cost.total.toFixed(2)}`]}
-                  className={currentSelection?.id === v.id ? 'ring-2 ring-primary-600' : ''}
-                >
-                  <img
-                    src={resolveRoomImageSrc(category.key, imgIndex)}
-                    data-attempt="0"
-                    onError={(e) => onRoomImgError(e, category.key, imgIndex)}
-                    alt={v.title}
-                    className="w-full h-40 object-cover rounded"
-                  />
-                  <div className="mt-3 flex justify-between items-center">
-                    <Button variant="outline" onClick={() => setSelections(prev => ({ ...prev, [category.key]: { ...v, _imgIndex: imgIndex } }))}>Selecionar</Button>
-                    <span className="text-secondary-600">Materiais médios</span>
-                  </div>
-                </AccordionItem>
+            <h2 className="text-xl font-bold text-secondary-900">Opções do cômodo</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {category.variants.map((v, idx) => {
+                const imgIndex = Math.min((idx % 5) + 1, 5);
+                const cost = computeVariantCost(v);
+                const selected = currentSelection?.id === v.id;
+                return (
+                  <Card key={v.id} className={selected ? 'ring-2 ring-primary-600' : ''}>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <RoomIcon keyName={category.key} />
+                        {v.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <img
+                        src={resolveRoomImageSrc(category.key, imgIndex)}
+                        data-attempt="0"
+                        onError={(e) => onRoomImgError(e, category.key, imgIndex)}
+                        alt={v.title}
+                        className="w-full h-40 object-cover rounded"
+                      />
+                      <div className="mt-3 flex justify-between items-center">
+                        <Button variant="outline" onClick={() => setSelections(prev => ({ ...prev, [category.key]: { ...v, _imgIndex: imgIndex } }))}>Selecionar</Button>
+                        <span className="text-secondary-600">{`${v.area} m² • R$ ${cost.total.toFixed(2)}`}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
                 );
-            })}
+              })}
+            </div>
           </section>
 
           <div className="group border border-secondary-200 rounded-lg bg-white">
@@ -363,6 +369,29 @@ const generateCompositions = async () => {
               </div>
             </section>
           </AccordionItem>
++           <section className="space-y-3">
++             <div className="flex items-center justify-between">
++               <h2 className="text-xl font-bold text-secondary-900">Imagens geradas</h2>
++               <Button variant="outline" onClick={generateCompositions}>Gerar 3 imagens</Button>
++             </div>
++             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
++               {Object.keys(selections).length ? [0,1,2].map((i) => (
++                 <Card key={i}>
++                   <CardHeader><CardTitle>Imagem {i+1}</CardTitle></CardHeader>
++                   <CardContent>
++                     <img
++                       src={compUrls[i] || getPlaceholderImage('Composição')}
++                       alt={`Composição ${i+1}`}
++                       className="w-full h-40 object-cover rounded"
++                     />
++                     <p className="text-secondary-600 mt-2">Composição aleatória das seleções atuais</p>
++                   </CardContent>
++                 </Card>
++               )) : (
++                 <div className="text-secondary-600">Selecione opções nos cômodos para gerar as composições</div>
++               )}
++             </div>
++           </section>
         </main>
     </div>
   );
