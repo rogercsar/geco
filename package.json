@@ -30,7 +30,8 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "bcryptjs": "^3.0.3",
-    "@supabase/supabase-js": "^2.45.1"
+    "@supabase/supabase-js": "^2.45.1",
+    "mercadopago": "^2.1.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

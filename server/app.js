@@ -25,6 +25,6 @@ const payments = require('./routes/payments');
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/budgets', budgets);
 app.use('/api/v1/payments', payments);
-app.post('/api/mp/create-preference', createSimulationPayment);
+app.post('/mp/create-preference', createSimulationPayment);
 
 module.exports = app;
