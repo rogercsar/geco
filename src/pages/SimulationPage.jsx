@@ -234,7 +234,7 @@ const generateCompositions = async () => {
   return (
     <div className="min-h-screen bg-secondary-50">
       <Sidebar />
-      <main className="lg:ml-64 container mx-auto px-4 py-8 space-y-6">
+      <main className="lg:ml-64 container mx-auto px-4 pt-2 pb-8 space-y-6">
           <div className="text-sm text-secondary-600 mb-1">
             <a href="/">Início</a>
             <span className="mx-2">/</span>
