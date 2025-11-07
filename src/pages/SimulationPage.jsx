@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { ROOM_CATEGORIES, computeVariantCost } from '../data/simulation';
 import Button from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
@@ -82,6 +82,105 @@ const onRoomImgError = (e, key, i) => {
     e.currentTarget.src = (catMap[key]?.thumbnail) || getPlaceholderImage(catMap[key]?.name || key);
     e.currentTarget.dataset.attempt = 2;
   }
+};
+
+// --------- Mosaico do projeto (canvas) ---------
+const getRoomPrimaryImageSrc = (key) => `/simulacoes/${key}/${key}1.jpg`;
+const loadRoomImage = (key) => new Promise((resolve) => {
+  const tryLoad = (srcs, idx = 0) => {
+    if (idx >= srcs.length) {
+      const img = new Image();
+      img.src = (catMap[key]?.thumbnail) || getPlaceholderImage(catMap[key]?.name || key);
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(img);
+      return;
+    }
+    const img = new Image();
+    img.src = srcs[idx];
+    img.onload = () => resolve(img);
+    img.onerror = () => tryLoad(srcs, idx + 1);
+  };
+  tryLoad([getRoomPrimaryImageSrc(key), `/simulacoes/${key}/${key}1.png`]);
+});
+
+const mosaicCanvasRefs = [useRef(null), useRef(null), useRef(null)];
+const [mosaicReady, setMosaicReady] = useState(false);
+
+const shuffle = (arr) => arr.map(v => ({ r: Math.random(), v })).sort((a,b)=>a.r-b.r).map(o=>o.v);
+
+const drawMosaic = async (canvas, order, costsByKey) => {
+  if (!canvas) return;
+  const cols = Math.ceil(Math.sqrt(order.length));
+  const rows = Math.ceil(order.length / cols);
+  const tileW = 320, tileH = 200, gap = 6;
+  const width = cols * tileW + (cols - 1) * gap;
+  const height = rows * tileH + (rows - 1) * gap + 28; // espaço para rodapé
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#f3f4f6';
+  ctx.fillRect(0, 0, width, height);
+
+  for (let idx = 0; idx < order.length; idx++) {
+    const key = order[idx];
+    const img = await loadRoomImage(key);
+    const col = idx % cols;
+    const row = Math.floor(idx / cols);
+    const x = col * (tileW + gap);
+    const y = row * (tileH + gap);
+    const ratio = Math.min(img.width / tileW || 1, img.height / tileH || 1);
+    const drawW = img.width / ratio;
+    const drawH = img.height / ratio;
+    const offsetX = x + (tileW - drawW) / 2;
+    const offsetY = y + (tileH - drawH) / 2;
+    try { ctx.drawImage(img, offsetX, offsetY, drawW, drawH); } catch {}
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.strokeRect(x, y, tileW, tileH);
+    // Label superior
+    ctx.fillStyle = 'rgba(17,24,39,0.9)';
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText(catMap[key]?.name || key, x + 8, y + 20);
+    // Overlay inferior com área e total
+    const cost = costsByKey[key];
+    if (cost) {
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fillRect(x + 4, y + tileH - 28, tileW - 8, 24);
+      ctx.fillStyle = '#111827';
+      ctx.font = '12px Arial';
+      ctx.fillText(`Área ${cost.area} m² • Total R$ ${cost.total.toFixed(2)}`, x + 10, y + tileH - 12);
+    }
+  }
+
+  // Rodapé com resumo
+  const summary = order.map(k => {
+    const c = costsByKey[k];
+    return `${catMap[k]?.name || k}: R$ ${c ? c.total.toFixed(2) : '0.00'}`;
+  }).join('  |  ');
+  ctx.fillStyle = '#111827';
+  ctx.font = 'bold 13px Arial';
+  ctx.fillText(summary, 8, height - 8);
+};
+
+const generateMosaics = async () => {
+  const keys = Object.keys(selections);
+  if (!keys.length) { toast.error('Selecione pelo menos um cômodo'); return; }
+  const costsByKey = Object.fromEntries(keys.map(k => [k, computeVariantCost(selections[k]) ]));
+  const orders = [shuffle([...keys]), shuffle([...keys]), shuffle([...keys])];
+  await drawMosaic(mosaicCanvasRefs[0].current, orders[0], costsByKey);
+  await drawMosaic(mosaicCanvasRefs[1].current, orders[1], costsByKey);
+  await drawMosaic(mosaicCanvasRefs[2].current, orders[2], costsByKey);
+  setMosaicReady(true);
+  toast.success('3 mosaicos gerados com ordens aleatórias');
+};
+
+const downloadMosaic = (idx) => {
+  const canvas = mosaicCanvasRefs[idx]?.current;
+  if (!canvas) return;
+  const url = canvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mosaico-projeto-${idx+1}.png`;
+  a.click();
 };
   const summaries = useMemo(() => Object.entries(selections).map(([key, v]) => ({ key, variant: v, cost: computeVariantCost(v) })), [selections]);
   const grandTotal = useMemo(() => summaries.reduce((sum, s) => sum + s.cost.total, 0), [summaries]);
@@ -264,6 +363,30 @@ const onRoomImgError = (e, key, i) => {
             </div>
             <ImageGrid />
           </section>
+
+          {/* Mosaico do projeto */}
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-secondary-900">Mosaico do projeto</h2>
+              <div className="flex items-center gap-2">
+                <Button onClick={generateMosaics}>Gerar mosaicos (3 ordens)</Button>
+                <Button variant="outline" onClick={() => { if (!mosaicReady) return toast.error('Gere os mosaicos primeiro'); downloadMosaic(0); }}>Baixar #1</Button>
+                <Button variant="outline" onClick={() => { if (!mosaicReady) return toast.error('Gere os mosaicos primeiro'); downloadMosaic(1); }}>Baixar #2</Button>
+                <Button variant="outline" onClick={() => { if (!mosaicReady) return toast.error('Gere os mosaicos primeiro'); downloadMosaic(2); }}>Baixar #3</Button>
+              </div>
+            </div>
+            <Card>
+              <CardContent>
+                <canvas ref={mosaicCanvasRefs[0]} className="w-full border border-secondary-200 rounded" />
+                <canvas ref={mosaicCanvasRefs[1]} className="w-full border border-secondary-200 rounded" />
+                <canvas ref={mosaicCanvasRefs[2]} className="w-full border border-secondary-200 rounded" />
+                {!Object.keys(selections).length && (
+                  <p className="text-secondary-600 mt-2">Selecione cômodos nas abas acima para compor os mosaicos.</p>
+                )}
+              </CardContent>
+            </Card>
+          </section
+          >
         </main>
       </div>
     </div>
